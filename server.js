@@ -1,11 +1,13 @@
 const express = require('express');
 const Anthropic = require('@anthropic-ai/sdk');
+const fs = require('fs').promises;
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Claude API 초기화 (환경변수에서 키 읽기)
+// Claude API 초기화
 const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
 });
@@ -13,37 +15,65 @@ const anthropic = new Anthropic({
 app.use(express.json());
 app.use(express.static('public'));
 
-// Root route - serve the main page
+// Root route
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
 
-// API 엔드포인트
+// Template loading
+let templateHTML = '';
+async function loadTemplate() {
+  try {
+    templateHTML = await fs.readFile(path.join(__dirname, 'public', 'template.html'), 'utf-8');
+    console.log('Template loaded successfully');
+  } catch (error) {
+    console.error('Failed to load template:', error);
+  }
+}
+loadTemplate();
+
+// API endpoint
 app.post('/api/generate', async (req, res) => {
   try {
     const requestData = req.body;
     
-    // 프롬프트 생성
-    const prompt = generateFullPrompt(requestData);
+    // JSON 데이터만 생성하도록 프롬프트 작성
+    const prompt = generateDataPrompt(requestData);
     
     // Claude API 호출
     const message = await anthropic.messages.create({
       model: "claude-3-opus-20240229",
-      max_tokens: 4096,
+      max_tokens: 2000, // JSON이므로 작아도 충분
       messages: [{
         role: "user",
         content: prompt
       }]
     });
     
+    // JSON 파싱
+    let productData;
+    try {
+      const jsonText = message.content[0].text.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      productData = JSON.parse(jsonText);
+    } catch (e) {
+      console.error('JSON parse error:', e);
+      productData = generateFallbackData(requestData);
+    }
+    
+    // 템플릿에 데이터 바인딩
+    const finalHTML = bindDataToTemplate(templateHTML, productData, requestData);
+    
+    // SEO 데이터 생성 (50개 이상 키워드)
+    const seoData = generateEnhancedSEO(requestData.productName, requestData.category);
+    
     res.json({
       success: true,
-      html: message.content[0].text,
-      seo: generateSEO(requestData.productName, requestData.category)
+      html: finalHTML,
+      seo: seoData
     });
     
   } catch (error) {
-    console.error('Claude API Error:', error);
+    console.error('API Error:', error);
     res.status(500).json({
       success: false,
       error: 'API 호출 실패: ' + error.message
@@ -51,111 +81,224 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
-// 완전한 프롬프트 생성 함수
-function generateFullPrompt(data) {
-  const isDetailedMode = data.composition || data.ingredients || data.characteristics;
+// JSON 데이터만 생성하는 프롬프트
+function generateDataPrompt(data) {
+  const isDetailedMode = data.composition || data.ingredients;
   
-  if (isDetailedMode) {
-    // 상세 입력 모드
-    return `
-당신은 "만원요리 최씨남매" 브랜드의 전문 상세페이지 작성자이자 모바일 UI/UX 전문가입니다.
+  return `당신은 "만원요리 최씨남매" 브랜드의 콘텐츠 전문가입니다.
+다음 제품 정보를 바탕으로 JSON 데이터만 생성해주세요.
 
-**제품 상세 정보:**
-- 제품명: ${data.productName}
-- 구성 및 규격: ${data.composition || '정보 없음'}
-- 소비기한: ${data.expiry || '정보 없음'}
-- 제품종류: ${data.productType || '정보 없음'}
-- 유형: ${data.storageType || '정보 없음'}
-- 성분: ${data.ingredients || '정보 없음'}
-- 제품특성: ${data.characteristics || '정보 없음'}
-- 주의사항: ${data.caution || '없음'}
-- HACCP 인증: ${data.haccp ? '있음' : '없음'}
-- 이미지 URL: ${data.images ? data.images.join(', ') : '없음'}
-
-**중요 규칙:**
-1. 품목제조보고서 성분 정보는 절대 변경하지 말고 그대로 사용
-2. 입력된 정보를 우선 사용하되, MZ 친화적으로 다듬기
-3. 판매자 정보는 항상 ㈜값진한끼 (고정)
-
-**8개 고정 섹션 구조:**
-1. Strategic Header (MZ 스토리 포함)
-2. Why Section (4가지 핵심 장점)
-3. 상세 이미지 섹션 (Why 다음 배치)
-4. Wow Section (배송비 절약 고정 메시지)
-5. How Section (활용법 2가지)
-6. Trust Section (신뢰도 요소 - HACCP 선택적)
-7. Company Info (판매자 고정)
-8. Footer CTA`;
-  } else {
-    // 간단 입력 모드
-    return `
-당신은 "만원요리 최씨남매" 브랜드의 전문 상세페이지 작성자입니다.
-
-**제품 정보:**
+제품 정보:
 - 제품명: ${data.productName}
 - 카테고리: ${data.category || '미지정'}
+${isDetailedMode ? `- 구성: ${data.composition}
+- 소비기한: ${data.expiry}
+- 보관방법: ${data.storageType}
+- 성분: ${data.ingredients}
+- 특성: ${data.characteristics}` : ''}
+- HACCP: ${data.haccp ? '인증' : '미인증'}
 - 주의사항: ${data.caution || '없음'}
-- HACCP 인증: ${data.haccp ? '있음' : '없음'}
-- 이미지 URL: ${data.images ? data.images.join(', ') : '없음'}
-- 참조 사이트: ${data.reference || '없음'}
 
-**미션:**
-1. 이 제품의 역사적 배경/스토리를 MZ 세대가 흥미로워할 한 줄로 요약
-2. 만원요리 최씨남매 브랜드 통일성에 맞는 8개 섹션 구조로 완전한 HTML 생성`;
-  }
-  
-  const commonRequirements = `
-
-**모바일 반응형 요구사항:**
-- clamp() 함수로 유연한 크기 조절
-- 터치 타겟 최소 44px
-- 줄간격 1.6~1.7
-- mobile-first 접근
-
-**출력:** 
-완전한 HTML 코드만 생성 (<!DOCTYPE html>부터 </html>까지, 설명 없이)
-반드시 8개 섹션 모두 포함, 판매자 정보는 ㈜값진한끼 고정`;
-  
-  return (isDetailedMode ? 
-    generateFullPrompt(data) : 
-    generateFullPrompt(data)) + commonRequirements;
+다음 JSON 형식으로만 응답하세요:
+{
+  "heroTitle": "MZ세대가 주목하는 역사적 스토리를 담은 제목",
+  "heroSubtitle": "제품의 매력을 2줄로 설명",
+  "badge1": "핵심 장점 1",
+  "badge2": "핵심 장점 2", 
+  "badge3": "핵심 장점 3",
+  "productCleanName": "브랜드 제거한 깨끗한 제품명",
+  "why1Title": "장점 제목 1",
+  "why1Text": "장점 설명 1",
+  "why2Title": "장점 제목 2",
+  "why2Text": "장점 설명 2",
+  "why3Title": "장점 제목 3",
+  "why3Text": "장점 설명 3",
+  "why4Title": "장점 제목 4",
+  "why4Text": "장점 설명 4",
+  "how1Title": "활용법 1",
+  "how1Text": "자세한 활용 방법 설명 1",
+  "how2Title": "활용법 2",
+  "how2Text": "자세한 활용 방법 설명 2",
+  "storageType": "${data.storageType || '냉동'}"
 }
 
-// SEO 데이터 생성 (개선)
-function generateSEO(productName, category) {
+중요: 반드시 유효한 JSON만 반환하고, 설명이나 주석 없이 JSON만 출력하세요.`;
+}
+
+// 템플릿에 데이터 바인딩
+function bindDataToTemplate(template, data, requestData) {
+  let html = template;
+  
+  // 기본 데이터 바인딩
+  Object.keys(data).forEach(key => {
+    const regex = new RegExp(`{{${key}}}`, 'g');
+    html = html.replace(regex, data[key] || '');
+  });
+  
+  // 제품명 바인딩
+  html = html.replace(/{{productName}}/g, requestData.productName);
+  
+  // 이미지 섹션 처리
+  if (requestData.images && requestData.images.length > 0) {
+    const imagesHTML = requestData.images.map(url => 
+      `<img src="${url}" alt="${requestData.productName}" class="product-image" style="margin-bottom: 20px;">`
+    ).join('\n');
+    html = html.replace('<!-- Images will be inserted here -->', imagesHTML);
+  }
+  
+  // HACCP 카드 표시/숨김
+  if (!requestData.haccp) {
+    html = html.replace('id="haccpCard"', 'id="haccpCard" style="display: none;"');
+  }
+  
+  // 제품 정보 섹션
+  let productInfoHTML = '';
+  if (requestData.composition) {
+    productInfoHTML += `<div class="info-row">
+      <span class="info-label">구성 및 규격</span>
+      <span class="info-value">${requestData.composition}</span>
+    </div>`;
+  }
+  if (requestData.expiry) {
+    productInfoHTML += `<div class="info-row">
+      <span class="info-label">소비기한</span>
+      <span class="info-value">${requestData.expiry}</span>
+    </div>`;
+  }
+  if (requestData.ingredients) {
+    productInfoHTML += `<div class="info-row">
+      <span class="info-label">원재료</span>
+      <span class="info-value">${requestData.ingredients}</span>
+    </div>`;
+  }
+  html = html.replace('<!-- Product info will be inserted here -->', productInfoHTML);
+  
+  // 주의사항 처리
+  if (requestData.caution) {
+    const warningHTML = `<div class="warning-box">
+      <p class="warning-text">
+        <i class="fas fa-exclamation-triangle"></i> ${requestData.caution}
+      </p>
+    </div>`;
+    html = html.replace('<div id="warningSection"></div>', warningHTML);
+  }
+  
+  return html;
+}
+
+// 강화된 SEO 생성 (50개 이상 키워드)
+function generateEnhancedSEO(productName, category) {
   const year = new Date().getFullYear();
   
-  // 제품명에서 브랜드 추출
+  // 브랜드 추출
   const brandMatch = productName.match(/\[(.+?)\]/);
   const brand = brandMatch ? brandMatch[1] : '';
-  const cleanProductName = productName.replace(/\[.+?\]/, '').trim();
+  const cleanName = productName.replace(/\[.+?\]/, '').trim();
   
-  // 20자 이내 요약/간략설명 생성
-  const summary = cleanProductName.length > 20 ? 
-    cleanProductName.substring(0, 17) + '...' : 
-    cleanProductName;
+  // 키워드 생성 (50개 이상)
+  const keywords = [];
   
-  const brief = category ? 
-    `${category} ${brand} 제품`.substring(0, 20) : 
-    '만원요리 추천 상품';
+  // 1. 브랜드 조합 (15개)
+  keywords.push(
+    '만원요리', '최씨남매', '만원요리최씨남매',
+    `만원요리${cleanName}`, `최씨남매${cleanName}`,
+    '만원요리추천', '최씨남매추천', '만원요리배송',
+    '최씨남매쇼핑', '만원요리할인', '최씨남매이벤트',
+    '만원요리신제품', '최씨남매베스트', '만원요리세일',
+    '최씨남매특가'
+  );
   
-  // 브랜드 기반 키워드 생성
-  const keywords = [
-    '만원요리', '최씨남매',
-    `만원요리${cleanProductName}`, `최씨남매${cleanProductName}`,
-    brand && `${brand}`, brand && `만원요리${brand}`,
-    cleanProductName, category,
-    '만원요리추천', '최씨남매추천'
-  ].filter(k => k).join(',');
+  // 2. 제품명 변형 (15개)
+  const nameVariations = generateNameVariations(cleanName);
+  keywords.push(...nameVariations);
+  
+  // 3. 카테고리 관련 (10개)
+  if (category) {
+    keywords.push(
+      category, `${category}추천`, `${category}베스트`,
+      `${category}쇼핑`, `${category}배송`, `${category}할인`,
+      `${category}인기`, `${category}맛집`, `${category}판매`,
+      `${category}구매`
+    );
+  }
+  
+  // 4. 브랜드별 키워드 (10개)
+  if (brand) {
+    keywords.push(
+      brand, `${brand}제품`, `${brand}추천`,
+      `${brand}${cleanName}`, `인생도매`, `인생${cleanName}`,
+      `${brand}맛집`, `${brand}베스트`, `${brand}할인`,
+      `${brand}구매`
+    );
+  }
+  
+  // 5. 일반 키워드 (10개)
+  keywords.push(
+    '냉동식품', '간편식', '밀키트', '집밥', '혼밥',
+    '배달음식', '온라인장보기', '식료품쇼핑', '푸드마켓',
+    '먹거리쇼핑'
+  );
+  
+  // 중복 제거 및 빈 값 제거
+  const uniqueKeywords = [...new Set(keywords.filter(k => k))];
   
   return {
     title: `${productName} | 만원요리 최씨남매`,
-    description: `${productName} - 만원요리 최씨남매 검증 제품. ${category || ''}`,
-    keywords: keywords,
+    description: `${productName} - 만원요리 최씨남매 검증 상품. ${category || ''} 카테고리 베스트셀러. 전국 배송, 신선도 보장`,
+    keywords: uniqueKeywords.join(','),
     author: '만원요리 최씨남매',
     copyright: `© ${year} 만원요리 최씨남매. All rights reserved.`,
-    summary: summary,
-    brief: brief
+    summary: cleanName.substring(0, 20),
+    brief: `${category || '추천'} ${brand || ''} 상품`,
+    keywordCount: uniqueKeywords.length
+  };
+}
+
+// 제품명 변형 생성 헬퍼
+function generateNameVariations(name) {
+  const variations = [name];
+  
+  // 숫자 제거 버전
+  variations.push(name.replace(/\d+g/g, '').replace(/\d+ml/g, '').trim());
+  
+  // 띄어쓰기 제거 버전
+  variations.push(name.replace(/\s/g, ''));
+  
+  // 조합 키워드
+  variations.push(
+    `${name}추천`, `${name}구매`, `${name}배송`,
+    `${name}할인`, `${name}가격`, `${name}리뷰`,
+    `${name}후기`, `${name}베스트`, `${name}인기`,
+    `${name}판매`, `${name}쇼핑`, `${name}온라인`
+  );
+  
+  return variations;
+}
+
+// Fallback 데이터 (API 실패 시)
+function generateFallbackData(requestData) {
+  const cleanName = requestData.productName.replace(/\[.+?\]/, '').trim();
+  
+  return {
+    heroTitle: requestData.productName,
+    heroSubtitle: "만원요리 최씨남매가 엄선한 프리미엄 상품",
+    badge1: "최고 품질",
+    badge2: "빠른 배송",
+    badge3: "안전 포장",
+    productCleanName: cleanName,
+    why1Title: "엄선된 재료",
+    why1Text: "최고급 원재료만을 사용하여 만든 프리미엄 제품입니다.",
+    why2Title: "전문가 검증",
+    why2Text: "식품 전문가들이 직접 검증한 안전한 제품입니다.",
+    why3Title: "합리적 가격",
+    why3Text: "최상의 품질을 합리적인 가격으로 제공합니다.",
+    why4Title: "신선도 보장",
+    why4Text: "철저한 온도관리로 신선함을 그대로 전달합니다.",
+    how1Title: "간편 조리",
+    how1Text: "포장을 뜯고 간단한 조리만으로 맛있게 즐기실 수 있습니다.",
+    how2Title: "다양한 활용",
+    how2Text: "여러 요리에 활용 가능한 만능 식재료입니다.",
+    storageType: requestData.storageType || "냉동"
   };
 }
 

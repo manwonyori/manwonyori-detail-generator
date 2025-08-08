@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{productName}} - 만원요리 최씨남매</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --saffron-gold: #E4A853;
+            --deep-rose: #C53030;
+            --deep-charcoal: #1F2937;
+            --pure-white: #FFFFFF;
+            --light-gray: #F9FAFB;
+            --medium-gray: #6B7280;
+            --border-gray: #E5E7EB;
+            --success-green: #10B981;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--deep-charcoal);
+            background: var(--light-gray);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: clamp(15px, 4vw, 30px);
+        }
+        
+        .section {
+            margin: clamp(20px, 6vw, 50px) 0;
+            padding: clamp(20px, 5vw, 40px);
+            background: var(--pure-white);
+            border-radius: clamp(16px, 3vw, 24px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: clamp(20px, 5vw, 32px);
+            font-weight: 800;
+            color: var(--deep-rose);
+            text-align: center;
+            margin-bottom: clamp(25px, 5vw, 40px);
+            line-height: 1.3;
+        }
+        
+        .red-gradient {
+            background: linear-gradient(135deg, var(--deep-rose) 0%, #B91C1C 100%);
+            color: var(--pure-white);
+            border-radius: clamp(16px, 3vw, 24px);
+            padding: clamp(25px, 6vw, 50px);
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(197, 48, 48, 0.3);
+        }
+        
+        .grid-mobile {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: clamp(15px, 4vw, 25px);
+        }
+        
+        @media (min-width: 768px) {
+            .grid-mobile {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .grid-mobile {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: clamp(15px, 4vw, 25px);
+        }
+        
+        @media (min-width: 768px) {
+            .grid-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .card {
+            background: var(--pure-white);
+            padding: clamp(20px, 4vw, 30px);
+            border-radius: clamp(12px, 2vw, 18px);
+            border: 2px solid var(--border-gray);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            border-color: var(--deep-rose);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px);
+            background: var(--saffron-gold);
+            color: var(--deep-charcoal);
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: clamp(12px, 2.5vw, 14px);
+            margin: clamp(8px, 2vw, 12px) clamp(4px, 1vw, 6px);
+        }
+        
+        .badge-red {
+            background: var(--deep-rose);
+            color: var(--pure-white);
+        }
+        
+        .badge-green {
+            background: var(--success-green);
+            color: var(--pure-white);
+        }
+        
+        .hero-title {
+            font-size: clamp(28px, 7vw, 48px);
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: clamp(15px, 3vw, 25px);
+        }
+        
+        .hero-subtitle {
+            font-size: clamp(16px, 3.5vw, 22px);
+            opacity: 0.95;
+            line-height: 1.6;
+            margin-bottom: clamp(20px, 4vw, 30px);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: auto;
+            border-radius: clamp(12px, 2vw, 18px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        
+        .icon-circle {
+            width: clamp(60px, 12vw, 80px);
+            height: clamp(60px, 12vw, 80px);
+            background: var(--deep-rose);
+            color: var(--pure-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(24px, 5vw, 32px);
+            margin: 0 auto clamp(15px, 3vw, 20px);
+        }
+        
+        .feature-title {
+            font-size: clamp(16px, 3.5vw, 20px);
+            font-weight: 700;
+            color: var(--deep-charcoal);
+            margin-bottom: clamp(8px, 2vw, 12px);
+        }
+        
+        .feature-text {
+            font-size: clamp(14px, 3vw, 16px);
+            color: var(--medium-gray);
+            line-height: 1.6;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: clamp(14px, 3vw, 20px) clamp(28px, 6vw, 40px);
+            background: var(--deep-rose);
+            color: var(--pure-white);
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: clamp(16px, 3.5vw, 20px);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(197, 48, 48, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(197, 48, 48, 0.4);
+        }
+        
+        .info-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(12px, 3vw, 18px) 0;
+            border-bottom: 1px solid var(--border-gray);
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: var(--deep-charcoal);
+            font-size: clamp(14px, 3vw, 16px);
+            flex: 0 0 auto;
+            margin-right: clamp(10px, 2vw, 15px);
+        }
+        
+        .info-value {
+            color: var(--medium-gray);
+            font-size: clamp(14px, 3vw, 16px);
+            flex: 1;
+            text-align: right;
+        }
+        
+        .warning-box {
+            background: #FEF2F2;
+            border: 2px solid #EF4444;
+            border-radius: clamp(12px, 2vw, 18px);
+            padding: clamp(15px, 3vw, 20px);
+            margin: clamp(20px, 4vw, 30px) 0;
+        }
+        
+        .warning-text {
+            color: #991B1B;
+            font-weight: 600;
+            font-size: clamp(14px, 3vw, 16px);
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .section {
+                margin: 15px 0;
+                padding: 20px;
+            }
+            
+            .hero-title {
+                text-align: center;
+            }
+            
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .info-value {
+                text-align: left;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Section 1: Strategic Header -->
+        <div class="section red-gradient">
+            <h1 class="hero-title">{{heroTitle}}</h1>
+            <p class="hero-subtitle">{{heroSubtitle}}</p>
+            <div style="margin-top: clamp(20px, 4vw, 30px);">
+                <span class="badge" style="background: white; color: var(--deep-rose);">
+                    <i class="fas fa-fire"></i> {{badge1}}
+                </span>
+                <span class="badge" style="background: white; color: var(--deep-rose);">
+                    <i class="fas fa-star"></i> {{badge2}}
+                </span>
+                <span class="badge" style="background: white; color: var(--deep-rose);">
+                    <i class="fas fa-truck"></i> {{badge3}}
+                </span>
+            </div>
+        </div>
+
+        <!-- Section 2: Why Section -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-question-circle"></i> 왜 만원요리 {{productCleanName}}일까요?
+            </h2>
+            <div class="grid-mobile">
+                <div class="card">
+                    <div class="icon-circle">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3 class="feature-title">{{why1Title}}</h3>
+                    <p class="feature-text">{{why1Text}}</p>
+                </div>
+                <div class="card">
+                    <div class="icon-circle">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3 class="feature-title">{{why2Title}}</h3>
+                    <p class="feature-text">{{why2Text}}</p>
+                </div>
+                <div class="card">
+                    <div class="icon-circle">
+                        <i class="fas fa-thumbs-up"></i>
+                    </div>
+                    <h3 class="feature-title">{{why3Title}}</h3>
+                    <p class="feature-text">{{why3Text}}</p>
+                </div>
+                <div class="card">
+                    <div class="icon-circle">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">{{why4Title}}</h3>
+                    <p class="feature-text">{{why4Text}}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Product Images -->
+        <div class="section" id="productImages">
+            <h2 class="section-title">
+                <i class="fas fa-image"></i> 제품 상세 이미지
+            </h2>
+            <!-- Images will be inserted here -->
+        </div>
+
+        <!-- Section 4: Wow Section -->
+        <div class="section" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%);">
+            <div style="text-align: center; color: white;">
+                <div style="font-size: clamp(48px, 10vw, 72px); margin-bottom: 20px;">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <h2 style="font-size: clamp(24px, 5vw, 36px); font-weight: 900; margin-bottom: 15px;">
+                    무료배송 혜택!
+                </h2>
+                <p style="font-size: clamp(16px, 3.5vw, 20px); opacity: 0.95; line-height: 1.6;">
+                    3만원 이상 구매시 전국 무료배송<br>
+                    만원요리 최씨남매와 함께라면<br>
+                    배송비 걱정 없이 장보기 완성!
+                </p>
+                <div style="margin-top: 25px;">
+                    <span class="badge" style="background: white; color: #10B981;">
+                        <i class="fas fa-box"></i> 안전포장
+                    </span>
+                    <span class="badge" style="background: white; color: #10B981;">
+                        <i class="fas fa-clock"></i> 빠른배송
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: How Section -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-utensils"></i> 이렇게 즐겨보세요!
+            </h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3 style="font-size: clamp(18px, 4vw, 24px); font-weight: 700; color: var(--deep-rose); margin-bottom: 15px;">
+                        <i class="fas fa-fire"></i> {{how1Title}}
+                    </h3>
+                    <p style="font-size: clamp(14px, 3vw, 16px); color: var(--medium-gray); line-height: 1.8;">
+                        {{how1Text}}
+                    </p>
+                </div>
+                <div class="card">
+                    <h3 style="font-size: clamp(18px, 4vw, 24px); font-weight: 700; color: var(--deep-rose); margin-bottom: 15px;">
+                        <i class="fas fa-lightbulb"></i> {{how2Title}}
+                    </h3>
+                    <p style="font-size: clamp(14px, 3vw, 16px); color: var(--medium-gray); line-height: 1.8;">
+                        {{how2Text}}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 6: Trust Section -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-certificate"></i> 믿고 먹는 만원요리
+            </h2>
+            <div class="grid-mobile">
+                <div class="card" style="text-align: center;">
+                    <div style="font-size: clamp(36px, 8vw, 48px); color: var(--saffron-gold); margin-bottom: 10px;">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h3 class="feature-title">정직한 유통</h3>
+                    <p class="feature-text">직접 검수, 직접 배송</p>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <div style="font-size: clamp(36px, 8vw, 48px); color: var(--saffron-gold); margin-bottom: 10px;">
+                        <i class="fas fa-temperature-low"></i>
+                    </div>
+                    <h3 class="feature-title">철저한 온도관리</h3>
+                    <p class="feature-text">{{storageType}} 완벽 유지</p>
+                </div>
+                <div class="card" style="text-align: center;" id="haccpCard">
+                    <div style="font-size: clamp(36px, 8vw, 48px); color: var(--success-green); margin-bottom: 10px;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 class="feature-title">HACCP 인증</h3>
+                    <p class="feature-text">식품안전관리 인증</p>
+                </div>
+            </div>
+            
+            <!-- Product Details -->
+            <div style="margin-top: clamp(30px, 6vw, 40px);">
+                <h3 style="font-size: clamp(18px, 4vw, 22px); font-weight: 700; margin-bottom: 20px; color: var(--deep-charcoal);">
+                    <i class="fas fa-info-circle"></i> 제품 정보
+                </h3>
+                <div id="productInfo">
+                    <!-- Product info will be inserted here -->
+                </div>
+            </div>
+            
+            <!-- Warning if exists -->
+            <div id="warningSection"></div>
+        </div>
+
+        <!-- Section 7: Company Info -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-building"></i> 판매자 정보
+            </h2>
+            <div style="background: var(--light-gray); padding: clamp(20px, 4vw, 30px); border-radius: 12px;">
+                <div class="info-row">
+                    <span class="info-label">상호명</span>
+                    <span class="info-value">㈜값진한끼</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">대표자</span>
+                    <span class="info-value">최현우</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">사업자등록번호</span>
+                    <span class="info-value">215-87-78007</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">통신판매업신고</span>
+                    <span class="info-value">제2024-서울강남-0000호</span>
+                </div>
+                <div class="info-row" style="border: none;">
+                    <span class="info-label">고객센터</span>
+                    <span class="info-value">1588-1234 (평일 09:00-18:00)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 8: Footer CTA -->
+        <div class="section red-gradient" style="text-align: center;">
+            <h2 style="font-size: clamp(24px, 5vw, 36px); font-weight: 900; margin-bottom: 20px;">
+                지금 바로 만원요리를 만나보세요!
+            </h2>
+            <p style="font-size: clamp(16px, 3.5vw, 20px); opacity: 0.95; margin-bottom: 30px;">
+                최고의 재료, 최상의 맛, 최선의 가격<br>
+                만원요리 최씨남매가 약속드립니다
+            </p>
+            <a href="#" class="cta-button" style="background: white; color: var(--deep-rose);">
+                <i class="fas fa-shopping-cart"></i> 지금 주문하기
+            </a>
+            <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.3);">
+                <p style="font-size: clamp(12px, 2.5vw, 14px); opacity: 0.8;">
+                    © 2025 만원요리 최씨남매. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
