@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>만원요리 최씨남매 상세페이지 생성 시스템</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --saffron-gold: #E4A853;
+            --deep-rose: #C53030;
+            --deep-charcoal: #1F2937;
+        }
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, var(--deep-rose) 0%, #B91C1C 100%); }
+        .loading { display: none; }
+        .loading.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="gradient-bg text-white rounded-2xl p-8 mb-8 text-center">
+            <h1 class="text-4xl font-bold mb-4">🔥 만원요리 최씨남매</h1>
+            <p class="text-xl">상세페이지 자동 생성 시스템 v2.0</p>
+            <p class="mt-2 opacity-90">AI + 크롤링으로 완벽한 일관성 구현</p>
+        </div>
+
+        <!-- Input Method Selection -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold mb-6 text-center">📝 입력 방식 선택</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <button onclick="selectMethod('simple')" class="method-card border-2 border-gray-200 rounded-xl p-6 hover:border-red-500 transition-all">
+                    <div class="text-4xl mb-4">⚡</div>
+                    <h3 class="text-xl font-bold mb-2">간단 입력</h3>
+                    <p class="text-gray-600">제품명만으로 AI가 모든 것을 생성</p>
+                    <div class="text-sm mt-2 text-green-600">✓ 빠른 생성 ✓ 스토리 크롤링</div>
+                </button>
+                <button onclick="selectMethod('detailed')" class="method-card border-2 border-gray-200 rounded-xl p-6 hover:border-blue-500 transition-all">
+                    <div class="text-4xl mb-4">📋</div>
+                    <h3 class="text-xl font-bold mb-2">상세 입력</h3>
+                    <p class="text-gray-600">모든 정보를 직접 입력하여 정확한 페이지 생성</p>
+                    <div class="text-sm mt-2 text-blue-600">✓ 정확성 ✓ 품목제조보고서 반영</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Simple Input Form -->
+        <div id="simpleForm" class="hidden bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <h3 class="text-2xl font-bold mb-6">⚡ 간단 입력 모드</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block font-bold mb-2">제품명 * (브랜드 포함)</label>
+                    <input type="text" id="simpleProductName" class="w-full p-4 border border-gray-300 rounded-lg" 
+                           placeholder="예: [인생]옛날치킨700g">
+                </div>
+                <div>
+                    <label class="block font-bold mb-2">카테고리</label>
+                    <select id="simpleCategory" class="w-full p-4 border border-gray-300 rounded-lg">
+                        <option value="">선택하세요</option>
+                        <option value="냉동식품">냉동식품</option>
+                        <option value="즉석식품">즉석식품</option>
+                        <option value="밀키트">밀키트</option>
+                        <option value="반찬/김치">반찬/김치</option>
+                        <option value="면류">면류</option>
+                        <option value="육류">육류</option>
+                        <option value="소스/양념">소스/양념</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-2">⚠️ 주의사항 (선택)</label>
+                    <input type="text" id="simpleCaution" class="w-full p-4 border border-gray-300 rounded-lg" 
+                           placeholder="예: 매운맛 주의, 알레르기 주의 등">
+                </div>
+                <div>
+                    <label class="block font-bold mb-2">HACCP 인증 여부</label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="simpleHaccp" class="mr-2">
+                        <span>HACCP 인증 제품입니다</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="block font-bold mb-2">이미지 URL (선택, 여러 개 가능)</label>
+                    <textarea id="simpleImages" rows="4" class="w-full p-3 border border-gray-300 rounded-lg" 
+                              placeholder="이미지 URL을 한 줄에 하나씩 입력하세요"></textarea>
+                </div>
+                <div>
+                    <label class="block font-bold mb-2">참조 사이트 (크롤링용)</label>
+                    <input type="url" id="simpleReference" class="w-full p-4 border border-gray-300 rounded-lg" 
+                           placeholder="예: https://example.com/product">
+                </div>
+                <button onclick="generateSimple()" class="w-full bg-red-600 text-white py-4 rounded-lg font-bold hover:bg-red-700 transition-all">
+                    <i class="fas fa-magic mr-2"></i>AI로 상세페이지 생성하기
+                </button>
+            </div>
+        </div>
+
+        <!-- Detailed Input Form -->
+        <div id="detailedForm" class="hidden bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <h3 class="text-2xl font-bold mb-6">📋 상세 입력 모드</h3>
+            
+            <!-- 두 가지 입력 방식 -->
+            <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-bold mb-3">입력 방식 선택:</h4>
+                <div class="flex gap-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="inputType" value="form" checked class="mr-2" onchange="toggleInputType()">
+                        <span>구조화된 폼 입력</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="inputType" value="text" class="mr-2" onchange="toggleInputType()">
+                        <span>텍스트 복사 붙여넣기</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Form Input -->
+            <div id="formInput" class="space-y-4">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold mb-2">제품명 *</label>
+                        <input type="text" id="detailedProductName" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-2">구성 및 규격</label>
+                        <input type="text" id="composition" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold mb-2">소비기한</label>
+                        <input type="text" id="expiry" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-2">제품종류</label>
+                        <input type="text" id="productType" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-2">유형</label>
+                        <select id="storageType" class="w-full p-3 border border-gray-300 rounded-lg">
+                            <option value="">선택</option>
+                            <option value="냉동">냉동</option>
+                            <option value="냉장">냉장</option>
+                            <option value="실온">실온</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold mb-2">성분 (품목제조보고서 내용)</label>
+                    <textarea id="ingredients" rows="6" class="w-full p-3 border border-gray-300 rounded-lg" 
+                              placeholder="품목제조보고서의 성분 정보를 그대로 입력해주세요"></textarea>
+                </div>
+                <div>
+                    <label class="block font-bold mb-2">제품특성</label>
+                    <textarea id="characteristics" rows="4" class="w-full p-3 border border-gray-300 rounded-lg" 
+                              placeholder="제품의 특성을 자유롭게 입력해주세요. AI가 정리해드립니다."></textarea>
+                </div>
+                <div>
+                    <label class="block font-bold mb-2">⚠️ 주의사항 (선택)</label>
+                    <input type="text" id="detailedCaution" class="w-full p-3 border border-gray-300 rounded-lg" 
+                           placeholder="예: 매운맛 주의, 알레르기 주의 등">
+                </div>
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="detailedHaccp" class="mr-2">
+                        <span>HACCP 인증 제품입니다</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="block font-bold mb-2">이미지 URL (선택)</label>
+                    <textarea id="detailedImages" rows="3" class="w-full p-3 border border-gray-300 rounded-lg" 
+                              placeholder="이미지 URL을 한 줄에 하나씩 입력하세요"></textarea>
+                </div>
+            </div>
+
+            <!-- Text Input -->
+            <div id="textInput" class="hidden">
+                <label class="block font-bold mb-2">전체 정보 붙여넣기</label>
+                <textarea id="bulkData" rows="15" class="w-full p-3 border border-gray-300 rounded-lg" 
+                          placeholder="함흥 물냉면 예시처럼 모든 정보를 복사해서 붙여넣어주세요"></textarea>
+                <div class="text-sm text-gray-600 mt-2">
+                    * AI가 자동으로 파싱하여 적절한 위치에 배치합니다
+                </div>
+            </div>
+
+            <button onclick="generateDetailed()" class="w-full bg-blue-600 text-white py-4 rounded-lg font-bold hover:bg-blue-700 transition-all mt-6">
+                <i class="fas fa-cogs mr-2"></i>상세 정보로 페이지 생성하기
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading bg-white rounded-2xl shadow-lg p-8 mb-8 text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
+            <p class="text-lg font-bold mb-2">AI가 상세페이지를 생성 중입니다...</p>
+            <div class="text-sm text-gray-600">
+                <p>🔍 제품 스토리 크롤링...</p>
+                <p>🎨 MZ 친화적 콘텐츠 생성...</p>
+                <p>📱 모바일 최적화 적용...</p>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="hidden bg-white rounded-2xl shadow-lg p-8">
+            <h3 class="text-2xl font-bold mb-6">🎉 생성 완료!</h3>
+            
+            <div class="grid md:grid-cols-2 gap-4 mb-6">
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="font-bold mb-2">📄 상세페이지 HTML</h4>
+                    <p class="text-sm text-gray-600">8개 섹션 구조 완성</p>
+                    <button onclick="downloadHTML()" class="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        <i class="fas fa-download mr-1"></i>다운로드
+                    </button>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="font-bold mb-2">📝 카페24 SEO 텍스트</h4>
+                    <p class="text-sm text-gray-600">메타태그 및 검색어 최적화</p>
+                    <button onclick="downloadSEO()" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        <i class="fas fa-download mr-1"></i>다운로드
+                    </button>
+                </div>
+            </div>
+            
+            <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                <h4 class="font-bold mb-2">미리보기</h4>
+                <iframe id="preview" class="w-full h-96 border border-gray-300 rounded"></iframe>
+            </div>
+            
+            <button onclick="resetForm()" class="bg-gray-600 text-white px-6 py-3 rounded hover:bg-gray-700">
+                <i class="fas fa-redo mr-2"></i>새로 만들기
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let generatedHTML = '';
+        let generatedSEO = '';
+        
+        function selectMethod(method) {
+            document.getElementById('simpleForm').classList.toggle('hidden', method !== 'simple');
+            document.getElementById('detailedForm').classList.toggle('hidden', method !== 'detailed');
+        }
+        
+        function toggleInputType() {
+            const inputType = document.querySelector('input[name="inputType"]:checked').value;
+            document.getElementById('formInput').classList.toggle('hidden', inputType !== 'form');
+            document.getElementById('textInput').classList.toggle('hidden', inputType !== 'text');
+        }
+        
+        async function generateSimple() {
+            const productName = document.getElementById('simpleProductName').value;
+            if (!productName) {
+                alert('제품명을 입력해주세요');
+                return;
+            }
+            
+            // 로딩 표시
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('simpleForm').classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        productName: productName,
+                        category: document.getElementById('simpleCategory').value,
+                        caution: document.getElementById('simpleCaution').value,
+                        haccp: document.getElementById('simpleHaccp').checked,
+                        images: document.getElementById('simpleImages').value.split('\n').filter(url => url.trim()),
+                        reference: document.getElementById('simpleReference').value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    generatedHTML = data.html;
+                    generatedSEO = formatSEO(data.seo);
+                    
+                    // 미리보기 표시
+                    const preview = document.getElementById('preview');
+                    preview.srcdoc = generatedHTML;
+                    
+                    // 결과 표시
+                    document.getElementById('loading').classList.remove('active');
+                    document.getElementById('results').classList.remove('hidden');
+                } else {
+                    alert('생성 실패: ' + data.error);
+                    document.getElementById('loading').classList.remove('active');
+                    document.getElementById('simpleForm').classList.remove('hidden');
+                }
+            } catch (error) {
+                alert('서버 연결 실패: ' + error.message);
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('simpleForm').classList.remove('hidden');
+            }
+        }
+        
+        async function generateDetailed() {
+            const inputType = document.querySelector('input[name="inputType"]:checked').value;
+            let productData = {};
+            
+            if (inputType === 'form') {
+                // 폼에서 데이터 수집
+                productData = {
+                    productName: document.getElementById('detailedProductName').value,
+                    composition: document.getElementById('composition').value,
+                    expiry: document.getElementById('expiry').value,
+                    productType: document.getElementById('productType').value,
+                    storageType: document.getElementById('storageType').value,
+                    ingredients: document.getElementById('ingredients').value,
+                    characteristics: document.getElementById('characteristics').value,
+                    caution: document.getElementById('detailedCaution').value,
+                    haccp: document.getElementById('detailedHaccp').checked,
+                    images: document.getElementById('detailedImages').value.split('\n').filter(url => url.trim())
+                };
+            } else {
+                // 텍스트에서 파싱
+                const bulkData = document.getElementById('bulkData').value;
+                productData = parseBulkData(bulkData);
+            }
+            
+            if (!productData.productName) {
+                alert('제품명을 입력해주세요');
+                return;
+            }
+            
+            // 로딩 표시
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('detailedForm').classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    generatedHTML = data.html;
+                    generatedSEO = formatSEO(data.seo);
+                    
+                    // 미리보기 표시
+                    const preview = document.getElementById('preview');
+                    preview.srcdoc = generatedHTML;
+                    
+                    // 결과 표시
+                    document.getElementById('loading').classList.remove('active');
+                    document.getElementById('results').classList.remove('hidden');
+                } else {
+                    alert('생성 실패: ' + data.error);
+                    document.getElementById('loading').classList.remove('active');
+                    document.getElementById('detailedForm').classList.remove('hidden');
+                }
+            } catch (error) {
+                alert('서버 연결 실패: ' + error.message);
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('detailedForm').classList.remove('hidden');
+            }
+        }
+        
+        function parseBulkData(bulkData) {
+            const lines = bulkData.split('\n');
+            const data = {};
+            
+            lines.forEach(line => {
+                if (line.includes('제품명')) data.productName = line.split(/\s{2,}/)[1]?.trim();
+                if (line.includes('구성 및 규격')) data.composition = line.split(/\s{2,}/)[1]?.trim();
+                if (line.includes('소비기한')) data.expiry = line.split(/\s{2,}/)[1]?.trim();
+                if (line.includes('제품종류')) data.productType = line.split(/\s{2,}/)[1]?.trim();
+                if (line.includes('유형')) data.storageType = line.split(/\s{2,}/)[1]?.trim();
+                if (line.includes('성분')) data.ingredients = line.split(/\s{2,}/)[1]?.trim();
+                if (line.includes('제품특성')) data.characteristics = line.split(/\s{2,}/)[1]?.trim();
+            });
+            
+            return data;
+        }
+        
+        function formatSEO(seo) {
+            const year = new Date().getFullYear();
+            return `===========================================
+카페24 상품 등록 정보 (SEO 최적화)
+===========================================
+생성일시: ${new Date().toLocaleDateString('ko-KR')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 상품 요약설명 (20자 이내)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${seo.summary || ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 상품 간략설명 (20자 이내)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${seo.brief || ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 검색어 설정 (브랜드 기반)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${seo.keywords || ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 메타태그 정보
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Title: ${seo.title}
+Author: ${seo.author}
+Description: ${seo.description}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+© ${year} 만원요리 최씨남매. All rights reserved.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+        }
+        
+        function downloadHTML() {
+            const blob = new Blob([generatedHTML], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `manwonyori_detail_${Date.now()}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function downloadSEO() {
+            const blob = new Blob([generatedSEO], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `manwonyori_seo_${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function resetForm() {
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('simpleForm').classList.add('hidden');
+            document.getElementById('detailedForm').classList.add('hidden');
+            generatedHTML = '';
+            generatedSEO = '';
+        }
+    </script>
+</body>
+</html>
