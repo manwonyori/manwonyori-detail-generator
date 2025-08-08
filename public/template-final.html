@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{productName}} - 만원요리 최씨남매</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --saffron-gold: #E4A853;
+            --deep-rose: #C53030;
+            --deep-charcoal: #1F2937;
+            --pure-white: #FFFFFF;
+            --light-gray: #F9FAFB;
+            --medium-gray: #6B7280;
+            --border-gray: #E5E7EB;
+            --success-green: #10B981;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--deep-charcoal);
+            background: var(--light-gray);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: clamp(15px, 4vw, 30px);
+        }
+        
+        .section {
+            margin: clamp(20px, 6vw, 50px) 0;
+            padding: clamp(20px, 5vw, 40px);
+            background: var(--pure-white);
+            border-radius: clamp(16px, 3vw, 24px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: clamp(20px, 5vw, 32px);
+            font-weight: 800;
+            color: var(--deep-rose);
+            text-align: center;
+            margin-bottom: clamp(25px, 5vw, 40px);
+            line-height: 1.3;
+        }
+        
+        .red-gradient {
+            background: linear-gradient(135deg, var(--deep-rose) 0%, #B91C1C 100%);
+            color: var(--pure-white);
+            border-radius: clamp(16px, 3vw, 24px);
+            padding: clamp(25px, 6vw, 50px);
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(197, 48, 48, 0.3);
+        }
+        
+        .grid-mobile {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: clamp(15px, 4vw, 25px);
+        }
+        
+        @media (min-width: 768px) {
+            .grid-mobile {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .grid-mobile {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        .card {
+            background: var(--pure-white);
+            padding: clamp(20px, 4vw, 30px);
+            border-radius: clamp(12px, 2vw, 18px);
+            border: 2px solid var(--border-gray);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            border-color: var(--deep-rose);
+        }
+        
+        .title-responsive {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: 700;
+        }
+        
+        .text-responsive {
+            font-size: clamp(14px, 3vw, 16px);
+            line-height: 1.7;
+        }
+        
+        .badge-responsive {
+            padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px);
+            font-size: clamp(12px, 2.5vw, 14px);
+            border-radius: 100px;
+            font-weight: 700;
+            display: inline-block;
+            margin: clamp(8px, 2vw, 12px) clamp(4px, 1vw, 6px);
+        }
+        
+        .feature-badge {
+            background: white;
+            color: var(--deep-rose);
+            padding: 10px 20px;
+            border-radius: 100px;
+            font-weight: 700;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .icon-circle {
+            width: clamp(60px, 12vw, 80px);
+            height: clamp(60px, 12vw, 80px);
+            background: var(--deep-rose);
+            color: var(--pure-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(24px, 5vw, 32px);
+            margin: 0 auto clamp(15px, 3vw, 20px);
+        }
+        
+        .company-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .company-grid span:nth-child(odd) {
+            font-weight: 600;
+            color: var(--deep-charcoal);
+        }
+        
+        .company-grid span:nth-child(even) {
+            color: var(--medium-gray);
+        }
+        
+        .ingredients-section {
+            background: #FFF8F3;
+            padding: clamp(25px, 5vw, 40px);
+            border-radius: clamp(16px, 3vw, 24px);
+            margin: clamp(20px, 6vw, 50px) 0;
+            border: 2px solid #FBBF24;
+        }
+        
+        .ingredients-content {
+            background: white;
+            padding: clamp(20px, 4vw, 30px);
+            border-radius: 12px;
+            font-size: clamp(14px, 3vw, 16px);
+            line-height: 1.8;
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .section {
+                margin: 15px 0;
+                padding: 20px;
+            }
+            
+            .company-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 1️⃣ Strategic Header -->
+        <div class="red-gradient">
+            <h1 class="text-4xl md:text-5xl font-black mb-6">{{heroTitle}}</h1>
+            <p class="text-xl md:text-2xl mb-8 leading-relaxed">{{heroSubtitle}}</p>
+            <div class="flex flex-wrap justify-center gap-3">
+                <span class="feature-badge">🔥 {{badge1}}</span>
+                <span class="feature-badge">⭐ {{badge2}}</span>
+                <span class="feature-badge">🚚 {{badge3}}</span>
+            </div>
+        </div>
+
+        <!-- 2️⃣ Why Section (4가지 핵심 특징) -->
+        <div class="section">
+            <h2 class="section-title">🤔 왜 만원요리 {{productCleanName}}일까요?</h2>
+            <div class="grid-mobile">
+                <div class="card">
+                    <div class="icon-circle">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3 class="title-responsive text-center mb-3">{{why1Title}}</h3>
+                    <p class="text-responsive text-gray-600 text-center">{{why1Text}}</p>
+                </div>
+                <div class="card">
+                    <div class="icon-circle">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3 class="title-responsive text-center mb-3">{{why2Title}}</h3>
+                    <p class="text-responsive text-gray-600 text-center">{{why2Text}}</p>
+                </div>
+                <div class="card">
+                    <div class="icon-circle">
+                        <i class="fas fa-thumbs-up"></i>
+                    </div>
+                    <h3 class="title-responsive text-center mb-3">{{why3Title}}</h3>
+                    <p class="text-responsive text-gray-600 text-center">{{why3Text}}</p>
+                </div>
+                <div class="card">
+                    <div class="icon-circle">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="title-responsive text-center mb-3">{{why4Title}}</h3>
+                    <p class="text-responsive text-gray-600 text-center">{{why4Text}}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3️⃣ 상세 이미지 섹션 -->
+        <div class="section" id="productImages">
+            <h2 class="section-title">📸 상품 상세 이미지</h2>
+            <div id="imageContainer">
+                <!-- 이미지가 여기에 삽입됩니다 -->
+            </div>
+        </div>
+
+        <!-- 4️⃣ Wow Section (배송 정보) -->
+        <div class="section" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white;">
+            <div class="text-center">
+                <div class="text-6xl mb-6">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <h2 class="text-3xl font-black mb-4">무료배송 혜택!</h2>
+                <p class="text-xl leading-relaxed mb-6">
+                    3만원 이상 구매시 전국 무료배송<br>
+                    만원요리 최씨남매와 함께라면<br>
+                    배송비 걱정 없이 장보기 완성!
+                </p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <span class="badge-responsive" style="background: white; color: #10B981;">
+                        📦 안전포장
+                    </span>
+                    <span class="badge-responsive" style="background: white; color: #10B981;">
+                        ⏰ 빠른배송
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5️⃣ How Section (활용법) -->
+        <div class="section">
+            <h2 class="section-title">🍴 이렇게 즐겨보세요!</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="card">
+                    <h3 class="title-responsive text-red-600 mb-4">
+                        <i class="fas fa-fire mr-2"></i>{{how1Title}}
+                    </h3>
+                    <p class="text-responsive text-gray-600">{{how1Text}}</p>
+                </div>
+                <div class="card">
+                    <h3 class="title-responsive text-red-600 mb-4">
+                        <i class="fas fa-lightbulb mr-2"></i>{{how2Title}}
+                    </h3>
+                    <p class="text-responsive text-gray-600">{{how2Text}}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6️⃣ Trust Section + Company Info -->
+        <div class="section">
+            <h2 class="section-title">🏆 믿고 먹는 만원요리</h2>
+            
+            <!-- 신뢰 요소 -->
+            <div class="grid-mobile mb-8">
+                <div class="card text-center">
+                    <div class="text-5xl text-yellow-500 mb-3">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h3 class="title-responsive mb-2">정직한 유통</h3>
+                    <p class="text-responsive text-gray-600">직접 검수, 직접 배송</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-5xl text-yellow-500 mb-3">
+                        <i class="fas fa-temperature-low"></i>
+                    </div>
+                    <h3 class="title-responsive mb-2">철저한 온도관리</h3>
+                    <p class="text-responsive text-gray-600">{{storageType}} 완벽 유지</p>
+                </div>
+                <div class="card text-center" id="haccpCard">
+                    <div class="text-5xl text-green-500 mb-3">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 class="title-responsive mb-2">HACCP 인증</h3>
+                    <p class="text-responsive text-gray-600">식품안전관리 인증</p>
+                </div>
+            </div>
+            
+            <!-- 판매자 정보 & 제품 정보 -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="card">
+                    <h3 class="title-responsive text-yellow-600 mb-4 text-center">판매자 정보</h3>
+                    <div class="company-grid">
+                        <span class="font-bold">상호명:</span><span>㈜값진한끼</span>
+                        <span class="font-bold">대표자:</span><span>박기환</span>
+                        <span class="font-bold">사업자번호:</span><span>582-81-02848</span>
+                        <span class="font-bold">주소:</span><span>경기도 파주시 경의로 1246, 11층 1105-19호</span>
+                        <span class="font-bold">연락처:</span><span>070-8835-2885</span>
+                        <span class="font-bold">이메일:</span><span>we@manwonyori.com</span>
+                        <span class="font-bold">통신판매업:</span><span>2025-경기파주-2195호</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="title-responsive text-yellow-600 mb-4 text-center">제품 정보</h3>
+                    <div class="company-grid" id="productInfo">
+                        <!-- 제품 정보가 여기에 삽입됩니다 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 주의사항 (있을 경우) -->
+            <div id="warningSection"></div>
+        </div>
+
+        <!-- 7️⃣ Ingredients Section (품목제조보고서) -->
+        <div class="ingredients-section" id="ingredientsSection">
+            <h2 class="section-title">📋 품목제조보고서 (원재료 및 성분)</h2>
+            <div class="ingredients-content" id="ingredientsContent">
+                <!-- 성분 정보가 여기에 삽입됩니다 -->
+            </div>
+        </div>
+
+        <!-- 8️⃣ Footer CTA -->
+        <div class="red-gradient">
+            <h2 class="text-3xl font-black mb-6">{{footerTitle}}</h2>
+            <p class="text-xl mb-8 leading-relaxed">{{footerSubtitle}}</p>
+            
+            <div class="flex flex-wrap justify-center gap-3 mb-8">
+                <span class="feature-badge">✅ 만원요리 검증</span>
+                <span class="feature-badge">✅ 36만 구독자 인증</span>
+                <span class="feature-badge">✅ {{footerBadge1}}</span>
+                <span class="feature-badge">✅ {{footerBadge2}}</span>
+                <span class="feature-badge">✅ {{footerBadge3}}</span>
+                <span class="feature-badge">✅ 합배송 가능</span>
+            </div>
+            
+            <div class="text-lg font-bold">
+                <i class="fas fa-heart mr-2"></i>만원요리 최씨남매와 함께하는 맛있는 선택!
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>

@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
 let templateHTML = '';
 async function loadTemplate() {
   try {
-    templateHTML = await fs.readFile(path.join(__dirname, 'public', 'template.html'), 'utf-8');
+    templateHTML = await fs.readFile(path.join(__dirname, 'public', 'template-final.html'), 'utf-8');
     console.log('Template loaded successfully');
   } catch (error) {
     console.error('Failed to load template:', error);
@@ -119,7 +119,12 @@ ${isDetailedMode ? `- 구성: ${data.composition}
   "how1Text": "자세한 활용 방법 설명 1",
   "how2Title": "활용법 2",
   "how2Text": "자세한 활용 방법 설명 2",
-  "storageType": "${data.storageType || '냉동'}"
+  "storageType": "${data.storageType || '냉동'}",
+  "footerTitle": "제품의 핵심 메시지 (예: 집에서 만나는 함흥의 그 맛!)",
+  "footerSubtitle": "만원요리 최씨남매가 검증한 [제품명]을<br>이제 간편하게 집에서 만나보세요!",
+  "footerBadge1": "제품 특징 1",
+  "footerBadge2": "제품 특징 2",
+  "footerBadge3": "제품 특징 3"
 }
 
 중요: 반드시 유효한 JSON만 반환하고, 설명이나 주석 없이 JSON만 출력하세요.`;
@@ -141,9 +146,9 @@ function bindDataToTemplate(template, data, requestData) {
   // 이미지 섹션 처리
   if (requestData.images && requestData.images.length > 0) {
     const imagesHTML = requestData.images.map(url => 
-      `<img src="${url}" alt="${requestData.productName}" class="product-image" style="margin-bottom: 20px;">`
+      `<img src="${url}" alt="${requestData.productName}" class="w-full rounded-lg shadow-lg mb-6">`
     ).join('\n');
-    html = html.replace('<!-- Images will be inserted here -->', imagesHTML);
+    html = html.replace('<!-- 이미지가 여기에 삽입됩니다 -->', imagesHTML);
   }
   
   // HACCP 카드 표시/숨김
@@ -151,35 +156,48 @@ function bindDataToTemplate(template, data, requestData) {
     html = html.replace('id="haccpCard"', 'id="haccpCard" style="display: none;"');
   }
   
-  // 제품 정보 섹션
+  // 제품 정보 섹션 (Company Info 섹션의 제품 정보)
   let productInfoHTML = '';
   if (requestData.composition) {
-    productInfoHTML += `<div class="info-row">
-      <span class="info-label">구성 및 규격</span>
-      <span class="info-value">${requestData.composition}</span>
-    </div>`;
+    productInfoHTML += `<span class="font-bold">구성:</span><span>${requestData.composition}</span>`;
   }
   if (requestData.expiry) {
-    productInfoHTML += `<div class="info-row">
-      <span class="info-label">소비기한</span>
-      <span class="info-value">${requestData.expiry}</span>
-    </div>`;
+    productInfoHTML += `<span class="font-bold">소비기한:</span><span>${requestData.expiry}</span>`;
   }
+  if (requestData.productType) {
+    productInfoHTML += `<span class="font-bold">제품종류:</span><span>${requestData.productType}</span>`;
+  }
+  if (requestData.storageType) {
+    productInfoHTML += `<span class="font-bold">유형:</span><span>${requestData.storageType}</span>`;
+  }
+  productInfoHTML += `<span class="font-bold">포장방식:</span><span>스킨포장</span>`;
+  productInfoHTML += `<span class="font-bold">합배송:</span><span>7세트까지 가능</span>`;
+  
+  html = html.replace('<!-- 제품 정보가 여기에 삽입됩니다 -->', productInfoHTML);
+  
+  // 품목제조보고서 섹션 (성분 정보)
   if (requestData.ingredients) {
-    productInfoHTML += `<div class="info-row">
-      <span class="info-label">원재료</span>
-      <span class="info-value">${requestData.ingredients}</span>
-    </div>`;
+    const ingredientsHTML = `
+      <h4 class="font-bold mb-3 text-lg">🍜 원재료 및 성분</h4>
+      <p class="mb-4">${requestData.ingredients}</p>
+      ${requestData.allergyInfo ? `
+      <h4 class="font-bold mb-3 text-lg">⚠️ 알레르기 정보</h4>
+      <p class="text-red-600">${requestData.allergyInfo}</p>` : ''}
+    `;
+    html = html.replace('<!-- 성분 정보가 여기에 삽입됩니다 -->', ingredientsHTML);
+  } else {
+    // 성분 정보가 없으면 섹션 숨기기
+    html = html.replace('id="ingredientsSection"', 'id="ingredientsSection" style="display: none;"');
   }
-  html = html.replace('<!-- Product info will be inserted here -->', productInfoHTML);
   
   // 주의사항 처리
   if (requestData.caution) {
-    const warningHTML = `<div class="warning-box">
-      <p class="warning-text">
-        <i class="fas fa-exclamation-triangle"></i> ${requestData.caution}
-      </p>
-    </div>`;
+    const warningHTML = `
+      <div class="mt-6 p-4 bg-red-50 border-2 border-red-400 rounded-lg">
+        <p class="text-red-700 font-bold">
+          <i class="fas fa-exclamation-triangle mr-2"></i>${requestData.caution}
+        </p>
+      </div>`;
     html = html.replace('<div id="warningSection"></div>', warningHTML);
   }
   
@@ -298,7 +316,12 @@ function generateFallbackData(requestData) {
     how1Text: "포장을 뜯고 간단한 조리만으로 맛있게 즐기실 수 있습니다.",
     how2Title: "다양한 활용",
     how2Text: "여러 요리에 활용 가능한 만능 식재료입니다.",
-    storageType: requestData.storageType || "냉동"
+    storageType: requestData.storageType || "냉동",
+    footerTitle: `집에서 만나는 ${cleanName}의 맛!`,
+    footerSubtitle: `만원요리 최씨남매가 검증한 ${cleanName}을<br>이제 간편하게 집에서 만나보세요!`,
+    footerBadge1: "대용량 구성",
+    footerBadge2: requestData.haccp ? "HACCP 인증" : "안전 인증",
+    footerBadge3: "합배송 가능"
   };
 }
 
