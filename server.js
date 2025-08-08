@@ -13,6 +13,11 @@ const anthropic = new Anthropic({
 app.use(express.json());
 app.use(express.static('public'));
 
+// Root route - serve the main page
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
 // API 엔드포인트
 app.post('/api/generate', async (req, res) => {
   try {
