@@ -29,7 +29,7 @@ app.post('/api/generate', async (req, res) => {
     // Claude API 호출
     const message = await anthropic.messages.create({
       model: "claude-3-opus-20240229",
-      max_tokens: 8000,
+      max_tokens: 4096,
       messages: [{
         role: "user",
         content: prompt
