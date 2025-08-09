@@ -294,16 +294,64 @@ function bindDataToTemplate(template, data, requestData) {
   
   html = html.replace('<!-- 제품 정보가 여기에 삽입됩니다 -->', productInfoHTML);
   
-  // 품목제조보고서 섹션
-  if (requestData.ingredients) {
-    const ingredientsHTML = `
-      <h4 class="font-bold mb-3 text-lg">🍜 원재료 및 성분</h4>
-      <p class="mb-4">${requestData.ingredients}</p>
-      ${requestData.allergyInfo ? `
-      <h4 class="font-bold mb-3 text-lg">⚠️ 알레르기 정보</h4>
-      <p class="text-red-600">${requestData.allergyInfo}</p>` : ''}
-    `;
-    html = html.replace('<!-- 성분 정보가 여기에 삽입됩니다 -->', ingredientsHTML);
+  // 품목제조보고서 섹션 (이미지 또는 테이블)
+  if (requestData.ingredientsImage || data.ingredientTable || requestData.ingredients) {
+    let ingredientsHTML = '';
+    
+    // 이미지가 있으면 우선 표시
+    if (requestData.ingredientsImage) {
+      ingredientsHTML += `
+        <div class="mb-6">
+          <img src="${requestData.ingredientsImage}" alt="품목제조보고서" class="w-full rounded-lg shadow-lg">
+        </div>`;
+    }
+    
+    // 텍스트 데이터가 있으면 추가로 표시
+    if (data.ingredientTable || requestData.ingredients) {
+      // 원재료 테이블
+      if (data.ingredientTable) {
+        ingredientsHTML += `
+          <h4 class="font-bold mb-3 text-lg">🍜 원재료명 및 함량</h4>
+          <table class="ingredient-table">
+            <thead>
+              <tr>
+                <th>원재료명</th>
+                <th>함량</th>
+                <th>원산지</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.ingredientTable}
+            </tbody>
+          </table>`;
+      } else if (requestData.ingredients) {
+        ingredientsHTML += `
+          <h4 class="font-bold mb-3 text-lg">🍜 원재료 및 성분</h4>
+          <div class="p-4 bg-gray-50 rounded">${requestData.ingredients}</div>`;
+      }
+      
+      // 영양정보 테이블
+      if (data.nutritionTable) {
+        ingredientsHTML += `
+          <div class="mt-6">
+            <h4 class="font-bold mb-3 text-lg">📈 영양정보</h4>
+            <table class="ingredient-table">
+              ${data.nutritionTable}
+            </table>
+          </div>`;
+      }
+      
+      // 알레르기 정보
+      if (data.allergyInfo || requestData.allergyInfo) {
+        ingredientsHTML += `
+          <div class="mt-6 p-4 bg-red-50 border-2 border-red-400 rounded-lg">
+            <h4 class="font-bold mb-2 text-lg text-red-700">⚠️ 알레르기 정보</h4>
+            <p class="text-red-600">${data.allergyInfo || requestData.allergyInfo}</p>
+          </div>`;
+      }
+    }
+    
+    html = html.replace('<!-- 원재료 테이블이 여기에 삽입됩니다 -->', ingredientsHTML);
   } else {
     html = html.replace('id="ingredientsSection"', 'id="ingredientsSection" style="display: none;"');
   }
