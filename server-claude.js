@@ -1,5 +1,4 @@
 const express = require('express');
-const OpenAI = require('openai');
 const Anthropic = require('@anthropic-ai/sdk');
 const fs = require('fs').promises;
 const path = require('path');
@@ -8,17 +7,10 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// API 초기화
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
+// Claude API 초기화
 const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
 });
-
-// AI Provider 선택 (기본: OpenAI)
-const AI_PROVIDER = process.env.AI_PROVIDER || 'openai';
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -45,69 +37,39 @@ app.post('/api/generate', async (req, res) => {
   try {
     const requestData = req.body;
     
-    // 프롬프트 생성
+    // JSON 데이터만 생성하도록 프롬프트 작성
     const prompt = generateDataPrompt(requestData);
     
-    let productData;
+    // Claude API 호출
+    const message = await anthropic.messages.create({
+      model: "claude-3-opus-20240229",
+      max_tokens: 2000, // JSON이므로 작아도 충분
+      messages: [{
+        role: "user",
+        content: prompt
+      }]
+    });
     
-    // AI Provider에 따라 다른 API 호출
+    // JSON 파싱
+    let productData;
     try {
-      if (AI_PROVIDER === 'claude' && process.env.CLAUDE_API_KEY) {
-        // Claude API 시도
-        const message = await anthropic.messages.create({
-          model: "claude-3-opus-20240229",
-          max_tokens: 2000,
-          messages: [{
-            role: "user",
-            content: prompt
-          }]
-        });
-        const jsonText = message.content[0].text.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-        productData = JSON.parse(jsonText);
-      } else {
-        throw new Error('Use OpenAI');
-      }
-    } catch (claudeError) {
-      // OpenAI로 폴백 또는 기본 사용
-      console.log('Using OpenAI API...');
-      
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo-16k", // 16K 토큰 버전
-        messages: [
-          {
-            role: "system",
-            content: "당신은 '만원요리 최씨남매' 브랜드의 전문 콘텐츠 작성자입니다. JSON 형식으로만 응답하세요."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000
-      });
-      
-      const jsonText = completion.choices[0].message.content.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      
-      try {
-        productData = JSON.parse(jsonText);
-      } catch (e) {
-        console.error('JSON parse error:', e);
-        productData = generateFallbackData(requestData);
-      }
+      const jsonText = message.content[0].text.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      productData = JSON.parse(jsonText);
+    } catch (e) {
+      console.error('JSON parse error:', e);
+      productData = generateFallbackData(requestData);
     }
     
     // 템플릿에 데이터 바인딩
     const finalHTML = bindDataToTemplate(templateHTML, productData, requestData);
     
-    // SEO 데이터 생성
+    // SEO 데이터 생성 (50개 이상 키워드)
     const seoData = generateEnhancedSEO(requestData.productName, requestData.category);
     
     res.json({
       success: true,
       html: finalHTML,
-      seo: seoData,
-      aiProvider: AI_PROVIDER === 'claude' ? 'Claude' : 'OpenAI'
+      seo: seoData
     });
     
   } catch (error) {
@@ -196,7 +158,7 @@ function bindDataToTemplate(template, data, requestData) {
     html = html.replace('id="haccpCard"', 'id="haccpCard" style="display: none;"');
   }
   
-  // 제품 정보 섹션
+  // 제품 정보 섹션 (Company Info 섹션의 제품 정보)
   let productInfoHTML = '';
   if (requestData.composition) {
     productInfoHTML += `<span class="font-bold">구성:</span><span>${requestData.composition}</span>`;
@@ -215,7 +177,7 @@ function bindDataToTemplate(template, data, requestData) {
   
   html = html.replace('<!-- 제품 정보가 여기에 삽입됩니다 -->', productInfoHTML);
   
-  // 품목제조보고서 섹션
+  // 품목제조보고서 섹션 (성분 정보)
   if (requestData.ingredients) {
     const ingredientsHTML = `
       <h4 class="font-bold mb-3 text-lg">🍜 원재료 및 성분</h4>
@@ -226,6 +188,7 @@ function bindDataToTemplate(template, data, requestData) {
     `;
     html = html.replace('<!-- 성분 정보가 여기에 삽입됩니다 -->', ingredientsHTML);
   } else {
+    // 성분 정보가 없으면 섹션 숨기기
     html = html.replace('id="ingredientsSection"', 'id="ingredientsSection" style="display: none;"');
   }
   
@@ -243,16 +206,19 @@ function bindDataToTemplate(template, data, requestData) {
   return html;
 }
 
-// 강화된 SEO 생성
+// 강화된 SEO 생성 (50개 이상 키워드)
 function generateEnhancedSEO(productName, category) {
   const year = new Date().getFullYear();
+  
+  // 브랜드 추출
   const brandMatch = productName.match(/\[(.+?)\]/);
   const brand = brandMatch ? brandMatch[1] : '';
   const cleanName = productName.replace(/\[.+?\]/, '').trim();
   
+  // 키워드 생성 (50개 이상)
   const keywords = [];
   
-  // 브랜드 조합
+  // 1. 브랜드 조합 (15개)
   keywords.push(
     '만원요리', '최씨남매', '만원요리최씨남매',
     `만원요리${cleanName}`, `최씨남매${cleanName}`,
@@ -262,11 +228,11 @@ function generateEnhancedSEO(productName, category) {
     '최씨남매특가'
   );
   
-  // 제품명 변형
+  // 2. 제품명 변형 (15개)
   const nameVariations = generateNameVariations(cleanName);
   keywords.push(...nameVariations);
   
-  // 카테고리 관련
+  // 3. 카테고리 관련 (10개)
   if (category) {
     keywords.push(
       category, `${category}추천`, `${category}베스트`,
@@ -276,7 +242,7 @@ function generateEnhancedSEO(productName, category) {
     );
   }
   
-  // 브랜드별 키워드
+  // 4. 브랜드별 키워드 (10개)
   if (brand) {
     keywords.push(
       brand, `${brand}제품`, `${brand}추천`,
@@ -286,13 +252,14 @@ function generateEnhancedSEO(productName, category) {
     );
   }
   
-  // 일반 키워드
+  // 5. 일반 키워드 (10개)
   keywords.push(
     '냉동식품', '간편식', '밀키트', '집밥', '혼밥',
     '배달음식', '온라인장보기', '식료품쇼핑', '푸드마켓',
     '먹거리쇼핑'
   );
   
+  // 중복 제거 및 빈 값 제거
   const uniqueKeywords = [...new Set(keywords.filter(k => k))];
   
   return {
@@ -307,21 +274,28 @@ function generateEnhancedSEO(productName, category) {
   };
 }
 
-// 제품명 변형 생성
+// 제품명 변형 생성 헬퍼
 function generateNameVariations(name) {
   const variations = [name];
+  
+  // 숫자 제거 버전
   variations.push(name.replace(/\d+g/g, '').replace(/\d+ml/g, '').trim());
+  
+  // 띄어쓰기 제거 버전
   variations.push(name.replace(/\s/g, ''));
+  
+  // 조합 키워드
   variations.push(
     `${name}추천`, `${name}구매`, `${name}배송`,
     `${name}할인`, `${name}가격`, `${name}리뷰`,
     `${name}후기`, `${name}베스트`, `${name}인기`,
     `${name}판매`, `${name}쇼핑`, `${name}온라인`
   );
+  
   return variations;
 }
 
-// Fallback 데이터
+// Fallback 데이터 (API 실패 시)
 function generateFallbackData(requestData) {
   const cleanName = requestData.productName.replace(/\[.+?\]/, '').trim();
   
@@ -357,7 +331,5 @@ function generateFallbackData(requestData) {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log('OpenAI API Key:', process.env.OPENAI_API_KEY ? '✅ Loaded' : '❌ Missing');
   console.log('Claude API Key:', process.env.CLAUDE_API_KEY ? '✅ Loaded' : '❌ Missing');
-  console.log('Using AI Provider:', AI_PROVIDER === 'claude' ? 'Claude' : 'OpenAI (Default)');
 });
