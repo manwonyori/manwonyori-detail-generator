@@ -103,6 +103,73 @@ For missing fields, use empty string. Return only JSON without any explanation.`
   }
 });
 
+// 원재료 테이블 파싱 함수
+async function parseIngredientsToTable(ingredientsText, apiClient) {
+  try {
+    const prompt = `다음 원재료 텍스트를 HTML 테이블 행으로 변환하세요.
+
+입력: "${ingredientsText}"
+
+출력 규칙:
+1. 각 원재료를 <tr><td>원재료명</td><td>함량</td><td>원산지</td></tr> 형식으로 변환
+2. 함량이 없으면 "함량 미표시"
+3. 원산지가 없으면 "원산지 미표시"
+4. 괄호 안의 내용은 원산지로 처리
+5. %가 포함된 숫자는 함량으로 처리
+6. 쉼표로 구분된 각 성분을 별도 행으로 처리
+
+예시:
+입력: "밀가루 45% (미국산, 호주산), 감자전분 35% (국산)"
+출력: 
+<tr><td>밀가루</td><td>45%</td><td>미국산, 호주산</td></tr>
+<tr><td>감자전분</td><td>35%</td><td>국산</td></tr>
+
+HTML 테이블 행 태그만 반환하세요:`;
+
+    const completion = await apiClient.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "너는 식품 성분 파싱 전문가다. HTML 테이블 태그만 정확히 반환하라." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.1,
+      max_tokens: 1000
+    });
+
+    return completion.choices[0].message.content.trim().replace(/```html\n?/g, '').replace(/```\n?/g, '');
+  } catch (error) {
+    console.error('AI 파싱 실패, 폴백 사용:', error);
+    return fallbackIngredientParsing(ingredientsText);
+  }
+}
+
+// 폴백 파싱 함수
+function fallbackIngredientParsing(text) {
+  try {
+    const ingredients = text.split(',');
+    let tableRows = '';
+    
+    ingredients.forEach(ingredient => {
+      const trimmed = ingredient.trim();
+      const percentMatch = trimmed.match(/(\d+\.?\d*%)/);
+      const originMatch = trimmed.match(/\(([^)]+)\)/);
+      
+      let name = trimmed.replace(/\d+\.?\d*%/, '').replace(/\([^)]+\)/, '').trim();
+      const percent = percentMatch ? percentMatch[1] : '함량 미표시';
+      const origin = originMatch ? originMatch[1] : '원산지 미표시';
+      
+      if (name) {
+        tableRows += `<tr><td>${name}</td><td>${percent}</td><td>${origin}</td></tr>\n`;
+      }
+    });
+    
+    return tableRows;
+  } catch (error) {
+    console.error('폴백 파싱 실패:', error);
+    return '<tr><td>파싱 오류</td><td>-</td><td>-</td></tr>';
+  }
+}
+
 // Template loading
 let templateHTML = '';
 async function loadTemplate() {
@@ -176,6 +243,13 @@ app.post('/api/generate', async (req, res) => {
       }
     }
     
+    // 원재료 테이블 파싱 (AI 개선)
+    if (requestData.ingredients && !productData.ingredientTable) {
+      console.log('원재료 AI 파싱 시작...');
+      productData.ingredientTable = await parseIngredientsToTable(requestData.ingredients, openai);
+      console.log('원재료 파싱 완료');
+    }
+    
     // 템플릿에 데이터 바인딩
     const finalHTML = bindDataToTemplate(templateHTML, productData, requestData);
     
@@ -247,7 +321,6 @@ ${isDetailedMode ? `- 구성: ${data.composition}
   "storageType": "${data.storageType || '냉동'}",
   "shippingTitle": "무료배송 혜택!",
   "shippingContent": "${data.shippingInfo ? data.shippingInfo.replace(/\n/g, '<br>') : '3만원 이상 구매시 전국 무료배송<br>만원요리 최씨남매와 함께라면<br>배송비 걱정 없이 장보기 완성!'}",
-  "ingredientTable": "${data.ingredients ? '성분을 테이블 HTML <tr> 태그로 파싱' : ''}",
   "allergyInfo": "알레르기 정보"
 }
 
