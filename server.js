@@ -87,14 +87,46 @@ For missing fields, use empty string. Return only JSON without any explanation.`
       max_tokens: 1000
     });
     
-    const jsonText = completion.choices[0].message.content.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    // AI 응답 정제 (parse API용)
+    let jsonText = completion.choices[0].message.content;
+    
+    // 기본 정제
+    jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    
+    // JSON 추출
+    const jsonStart = jsonText.indexOf('{');
+    const jsonEnd = jsonText.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+      jsonText = jsonText.substring(jsonStart, jsonEnd + 1);
+    }
+    
+    // 문자 정제
+    jsonText = jsonText
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '')
+      .replace(/\r\n/g, '\\n')
+      .replace(/\r/g, '\\n')
+      .replace(/\n/g, '\\n')
+      .replace(/\t/g, '\\t');
     
     try {
       const parsedData = JSON.parse(jsonText);
       res.json({ success: true, data: parsedData });
     } catch (e) {
-      console.error('JSON parse error:', e);
-      res.json({ success: false, error: 'JSON 파싱 실패' });
+      console.error('Parse JSON error:', e);
+      console.error('실패한 JSON:', jsonText.substring(0, 200));
+      
+      // 복구 시도
+      try {
+        let fixedJson = jsonText
+          .replace(/'/g, '"')
+          .replace(/([{,]\s*)(\w+):/g, '$1"$2":');
+          
+        const parsedData = JSON.parse(fixedJson);
+        res.json({ success: true, data: parsedData });
+      } catch (e2) {
+        console.error('Parse JSON 복구도 실패:', e2);
+        res.json({ success: false, error: 'JSON 파싱 실패' });
+      }
     }
     
   } catch (error) {
@@ -233,13 +265,52 @@ app.post('/api/generate', async (req, res) => {
         max_tokens: 2000
       });
       
-      const jsonText = completion.choices[0].message.content.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      // AI 응답 정제 강화
+      let jsonText = completion.choices[0].message.content;
+      
+      // 코드블록 제거
+      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      
+      // 추가 정제: 앞뒤 공백, 줄바꿈, 탭 제거
+      jsonText = jsonText.trim();
+      
+      // JSON 시작과 끝 찾기
+      const jsonStart = jsonText.indexOf('{');
+      const jsonEnd = jsonText.lastIndexOf('}');
+      
+      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+        jsonText = jsonText.substring(jsonStart, jsonEnd + 1);
+      }
+      
+      // 잘못된 문자 정제
+      jsonText = jsonText
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '') // 제어 문자 제거 (탭과 줄바꿈은 보존)
+        .replace(/\r\n/g, '\\n') // Windows 줄바꿈
+        .replace(/\r/g, '\\n') // Mac 줄바꿈  
+        .replace(/\n/g, '\\n') // Unix 줄바꿈
+        .replace(/\t/g, '\\t'); // 탭 이스케이프
+      
+      console.log('정제된 JSON 길이:', jsonText.length, '처음 100자:', jsonText.substring(0, 100));
       
       try {
         productData = JSON.parse(jsonText);
       } catch (e) {
         console.error('JSON parse error:', e);
-        productData = generateFallbackData(requestData);
+        console.error('실패한 JSON (처음 500자):', jsonText.substring(0, 500));
+        
+        // 추가 복구 시도: 잘못된 JSON 구조 수정
+        try {
+          // 쌍따옴표 문제 수정 시도
+          let fixedJson = jsonText
+            .replace(/'/g, '"') // 단일 따옴표를 쌍따옴표로
+            .replace(/([{,]\s*)(\w+):/g, '$1"$2":'); // 키를 따옴표로 감쌈
+            
+          productData = JSON.parse(fixedJson);
+          console.log('JSON 복구 성공!');
+        } catch (e2) {
+          console.error('JSON 복구도 실패:', e2);
+          productData = generateFallbackData(requestData);
+        }
       }
     }
     
@@ -307,7 +378,7 @@ ${isDetailedMode ? `- 구성: ${data.composition}
   "badge1": "${data.badge1 || '판매 1위'}",
   "badge2": "${data.badge2 || '한정수량'}",
   "productCleanName": "브랜드 제거한 깨끗한 제품명",
-  "storyContent": "**체계적 스토리 생성 (STEP별 접근)**\n\nSTEP 1: 제품 카테고리 역사 조사\n- 해당 식품/제품의 기원과 발전사 탐구 (예: 조선시대부터 시작된 전통, 지역별 특산품의 역사)\n- 지역별, 문화별 의미와 가치 파악 (예: 경상도 전통, 가정의 맛, 할머니의 손맛)\n- 전통 제조법과 현대 기술의 연결점 찾기\n\nSTEP 2: 감성적 스토리 구성\n- 과거의 지혜 → 현재의 편리함 연결\n- 문화적 가치 → 개인적 경험 연결 (가족의 추억, 고향의 맛)\n- 전통 → 혁신의 스토리라인 구축\n\nSTEP 3: 타임라인 구조화 (3-4문장으로 완성)\n- 1문장: 역사적 기원 (언제부터, 어디서, 왜 시작되었는가)\n- 2문장: 현대적 재해석 (어떻게 발전했는가, 현재의 의미)\n- 3문장: 만원요리 선택 이유 (왜 이 제품을 선택했는가)\n- 4문장: 구매자 경험 가치 (고객이 얻을 특별한 경험과 감정)\n\n최종 결과물은 3-4문장의 연결된 스토리로 완성하되, 역사→현재→미래 흐름으로 자연스럽게 구성하세요.",
+  "storyContent": "해당 제품의 역사적 기원과 문화적 배경을 바탕으로 3-4문장의 깊이 있는 스토리를 작성하세요. 제품 카테고리의 역사적 기원이나 지역 전통을 언급하고, 그 전통이 현대에 어떻게 재해석되었는지 설명하며, 만원요리가 이 제품을 선택한 특별한 이유를 포함하고, 고객이 이 제품을 통해 경험할 수 있는 감정적 가치를 담아 완성하세요.",
   "why1Title": "가장 강력한 구매 이유 (고객 페인포인트 해결)",
   "why1Text": "구체적인 혜택과 차별점 설명 (숫자/데이터 포함시 신뢰도 UP)",
   "why2Title": "두번째 구매 이유 (경쟁제품 대비 우위)",

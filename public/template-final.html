@@ -221,6 +221,77 @@
                 gap: 8px;
             }
         }
+
+        /* 🎯 방안 2: 하이브리드 텍스트 정렬 (모바일 가독성 최적화) */
+        
+        /* 카드 내 본문은 항상 좌측 정렬 */
+        .card p,
+        .card .text-responsive {
+            text-align: left !important;
+        }
+        
+        /* 스토리 콘텐츠는 좌측 정렬 */
+        .story-content,
+        .story-content .text-lg {
+            text-align: left !important;
+        }
+        
+        /* 성분/원재료 설명도 좌측 정렬 */
+        .ingredients-content {
+            text-align: left !important;
+        }
+        
+        /* 섹션 제목은 중앙 정렬 유지 (브랜드 임팩트) */
+        .section-title {
+            text-align: center;
+        }
+        
+        /* 히어로 섹션은 중앙 정렬 유지 (첫인상 중요) */
+        .red-gradient {
+            text-align: center;
+        }
+        
+        /* 배송 정보도 중앙 정렬 유지 (임팩트) */
+        .section[style*="linear-gradient"] {
+            text-align: center;
+        }
+        
+        /* 카드 제목은 모바일에서 좌측 정렬 */
+        @media (max-width: 767px) {
+            .card .title-responsive {
+                text-align: left !important;
+            }
+            
+            .card .icon-circle {
+                margin-left: 0;
+                margin-right: auto;
+            }
+        }
+        
+        /* 데스크탑에서는 카드 제목 중앙 정렬 유지 */
+        @media (min-width: 768px) {
+            .card .title-responsive {
+                text-align: center;
+            }
+        }
+        
+        /* 신뢰 카드들은 항상 아이콘만 중앙, 텍스트는 좌측 */
+        .trust-card {
+            text-align: left;
+        }
+        
+        .trust-card .title-responsive,
+        .trust-card p {
+            text-align: left !important;
+        }
+        
+        /* 데스크탑에서도 신뢰 카드 텍스트는 좌측 유지하되, 아이콘은 중앙 */
+        @media (min-width: 768px) {
+            .trust-card .title-responsive,
+            .trust-card p {
+                text-align: left !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -244,22 +315,22 @@
                     <div class="icon-circle">
                         <i class="fas fa-award"></i>
                     </div>
-                    <h3 class="title-responsive text-center mb-3">{{why1Title}}</h3>
-                    <p class="text-responsive text-gray-600 text-center">{{why1Text}}</p>
+                    <h3 class="title-responsive mb-3">{{why1Title}}</h3>
+                    <p class="text-responsive text-gray-600">{{why1Text}}</p>
                 </div>
                 <div class="card">
                     <div class="icon-circle">
                         <i class="fas fa-heart"></i>
                     </div>
-                    <h3 class="title-responsive text-center mb-3">{{why2Title}}</h3>
-                    <p class="text-responsive text-gray-600 text-center">{{why2Text}}</p>
+                    <h3 class="title-responsive mb-3">{{why2Title}}</h3>
+                    <p class="text-responsive text-gray-600">{{why2Text}}</p>
                 </div>
                 <div class="card">
                     <div class="icon-circle">
                         <i class="fas fa-thumbs-up"></i>
                     </div>
-                    <h3 class="title-responsive text-center mb-3">{{why3Title}}</h3>
-                    <p class="text-responsive text-gray-600 text-center">{{why3Text}}</p>
+                    <h3 class="title-responsive mb-3">{{why3Title}}</h3>
+                    <p class="text-responsive text-gray-600">{{why3Text}}</p>
                 </div>
             </div>
         </div>
@@ -327,29 +398,29 @@
             
             <!-- 신뢰 요소 -->
             <div class="grid-mobile mb-8">
-                <div class="card text-center">
-                    <div class="text-5xl text-yellow-500 mb-3">
+                <div class="card trust-card">
+                    <div class="text-5xl text-yellow-500 mb-3 text-center">
                         <i class="fas fa-store"></i>
                     </div>
                     <h3 class="title-responsive mb-2">정직한 유통</h3>
                     <p class="text-responsive text-gray-600">직접 검수, 직접 배송</p>
                 </div>
-                <div class="card text-center">
-                    <div class="text-5xl text-yellow-500 mb-3">
+                <div class="card trust-card">
+                    <div class="text-5xl text-yellow-500 mb-3 text-center">
                         <i class="fas fa-temperature-low"></i>
                     </div>
                     <h3 class="title-responsive mb-2">철저한 온도관리</h3>
                     <p class="text-responsive text-gray-600">{{storageType}} 완벽 유지</p>
                 </div>
-                <div class="card text-center" id="youtubeCard">
-                    <div class="text-5xl text-red-500 mb-3">
+                <div class="card trust-card" id="youtubeCard">
+                    <div class="text-5xl text-red-500 mb-3 text-center">
                         <i class="fas fa-play-circle"></i>
                     </div>
                     <h3 class="title-responsive mb-2">38만 구독자 인증</h3>
                     <p class="text-responsive text-gray-600">만원요리 최씨남매</p>
                 </div>
-                <div class="card text-center" id="haccpCard" style="display: none;">
-                    <div class="text-5xl text-green-500 mb-3">
+                <div class="card trust-card" id="haccpCard" style="display: none;">
+                    <div class="text-5xl text-green-500 mb-3 text-center">
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <h3 class="title-responsive mb-2">HACCP 인증</h3>
