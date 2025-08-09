@@ -220,9 +220,8 @@ ${isDetailedMode ? `- 구성: ${data.composition}
 {
   "heroTitle": "MZ세대가 주목하는 역사적 스토리를 담은 제목",
   "heroSubtitle": "제품의 매력을 2줄로 설명",
-  "badge1": "핵심 장점 1",
-  "badge2": "핵심 장점 2", 
-  "badge3": "핵심 장점 3",
+  "badge1": "${data.badge1 || '핵심 특징 1'}",
+  "badge2": "${data.badge2 || '핵심 특징 2'}",
   "productCleanName": "브랜드 제거한 깨끗한 제품명",
   "why1Title": "장점 제목 1",
   "why1Text": "장점 설명 1",
@@ -356,8 +355,18 @@ function bindDataToTemplate(template, data, requestData) {
     html = html.replace('id="ingredientsSection"', 'id="ingredientsSection" style="display: none;"');
   }
   
-  // 주의사항 처리
+  // 주의사항 처리 (두 곳에 표시)
   if (requestData.caution) {
+    // Hero 섹션에 표시
+    const heroCautionHTML = `
+      <div class="mt-6 p-3 bg-white bg-opacity-20 border-2 border-white rounded-lg">
+        <p class="text-white font-bold">
+          ⚠️ ${requestData.caution}
+        </p>
+      </div>`;
+    html = html.replace('<div id="heroCaution"></div>', heroCautionHTML);
+    
+    // Trust 섹션에도 표시
     const warningHTML = `
       <div class="mt-6 p-4 bg-red-50 border-2 border-red-400 rounded-lg">
         <p class="text-red-700 font-bold">
@@ -365,6 +374,8 @@ function bindDataToTemplate(template, data, requestData) {
         </p>
       </div>`;
     html = html.replace('<div id="warningSection"></div>', warningHTML);
+  } else {
+    html = html.replace('<div id="heroCaution"></div>', '');
   }
   
   return html;
@@ -455,9 +466,8 @@ function generateFallbackData(requestData) {
   return {
     heroTitle: requestData.productName,
     heroSubtitle: "만원요리 최씨남매가 엄선한 프리미엄 상품",
-    badge1: "최고 품질",
-    badge2: "빠른 배송",
-    badge3: "안전 포장",
+    badge1: requestData.badge1 || "최고 품질",
+    badge2: requestData.badge2 || "빠른 배송",
     productCleanName: cleanName,
     storyContent: `${cleanName}은(는) 오랜 전통과 노하우를 바탕으로 만들어진 특별한 제품입니다. 만원요리 최씨남매가 엄선한 이 제품은 최고의 재료와 정성으로 만들어져 특별한 맛을 자랑합니다.`,
     why1Title: "엄선된 재료",
