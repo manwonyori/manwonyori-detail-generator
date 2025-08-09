@@ -347,9 +347,7 @@ app.post('/api/generate', async (req, res) => {
 function generateDataPrompt(data) {
   const isDetailedMode = data.composition || data.ingredients;
   
-  // 제품특성 기반 추가 지시사항 생성
-  const characteristicsGuidance = data.characteristics ? 
-    `\n\n**🎯 제품특성 활용 지시사항:**\n제품의 고유한 특성 "${data.characteristics}"을 다음과 같이 활용하세요:\n- 스토리에서는 이 특성을 역사적/문화적 배경과 연결하여 차별점 강조\n- Why 섹션에서는 이 특성을 구매 이유와 경쟁 우위로 변환\n- How 섹션에서는 이 특성을 살린 구체적 활용법 제시` : '';
+  // 제품특성은 별도 섹션에 표시하므로 AI 지시사항에서 제외
   
   return `**너는 10년차 퍼포먼스 마케터이자, 소비 심리학에 기반한 카피라이팅 전문가 + 브랜드 스토리텔러 + UX/UI 디자이너이다.**
 
@@ -369,7 +367,7 @@ ${isDetailedMode ? `- 구성: ${data.composition}
 - 성분: ${data.ingredients}
 - 특성: ${data.characteristics}` : ''}
 - HACCP: ${data.haccp ? '인증' : '미인증'}
-- 주의사항: ${data.caution || '없음'}${characteristicsGuidance}
+- 주의사항: ${data.caution || '없음'}
 
 **[GUIDELINES v5.0 - 퍼포먼스 마케팅 기반]**
 
@@ -410,37 +408,10 @@ ${isDetailedMode ? `- 구성: ${data.composition}
 function bindDataToTemplate(template, data, requestData) {
   let html = template;
   
-  // 제품특성 기반 콘텐츠 개선 (후처리)
-  if (requestData.characteristics && data.storyContent) {
-    // 스토리에 특성 자연스럽게 통합
-    if (data.storyContent.includes('오랜 전통과 노하우를 바탕으로')) {
-      // Fallback 데이터인 경우 특성 기반으로 교체
-      const characteristics = requestData.characteristics;
-      const productName = requestData.productName.replace(/\[.*?\]/, '').trim();
-      
-      data.storyContent = `${productName}은(는) ${characteristics}라는 특별한 매력을 가진 독특한 제품입니다. 만원요리 최씨남매가 이 제품을 선택한 이유는 바로 이런 차별화된 특성 때문입니다. 이 제품만의 고유한 특징이 고객들에게 잊지 못할 특별한 경험을 선사할 것입니다.`;
-    } else {
-      // AI가 생성한 경우 특성 추가
-      data.storyContent = data.storyContent + ` 특히 이 제품의 "${requestData.characteristics}"라는 독특한 특성이 다른 제품과의 확실한 차별점을 만들어냅니다.`;
-    }
-    
-    // Why 섹션에 특성 반영
-    if (data.why1Text && data.why1Text.includes('최고급 원재료')) {
-      data.why1Text = `${requestData.characteristics}로 인해 고객들이 경험할 수 있는 특별한 가치와 혜택을 제공합니다.`;
-    }
-    
-    if (data.why2Text && data.why2Text.includes('식품 전문가들이')) {
-      data.why2Text = `"${requestData.characteristics}"라는 독특한 특성으로 경쟁제품과는 완전히 다른 차원의 만족감을 선사합니다.`;
-    }
-    
-    // How 섹션에 특성 반영  
-    if (data.how1Text && data.how1Text.includes('포장을 뜯고')) {
-      data.how1Text = `이 제품의 "${requestData.characteristics}" 특성을 최대한 즐기기 위한 기본 활용법을 소개합니다.`;
-    }
-    
-    if (data.how2Text && data.how2Text.includes('여러 요리에')) {
-      data.how2Text = `"${requestData.characteristics}"의 매력을 200% 끌어올리는 프로만 아는 특별한 활용 노하우입니다.`;
-    }
+  // 제품특성이 있으면 별도 섹션에 간단하게 표시
+  if (requestData.characteristics) {
+    html = html.replace('id="characteristicsSection" style="display: none;"', 'id="characteristicsSection"');
+    html = html.replace('<!-- 제품특성이 여기에 표시됩니다 -->', requestData.characteristics);
   }
   
   // 기본 데이터 바인딩
