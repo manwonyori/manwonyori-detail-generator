@@ -74,6 +74,12 @@
                            placeholder="예: 매운맛 주의, 알레르기 주의 등">
                 </div>
                 <div>
+                    <label class="block font-bold mb-2">배송 정보 *</label>
+                    <input type="text" id="simpleShipping" class="w-full p-4 border border-gray-300 rounded-lg" 
+                           placeholder="예: 3만원 이상 구매시 전국 무료배송" 
+                           value="3만원 이상 구매시 전국 무료배송">
+                </div>
+                <div>
                     <label class="block font-bold mb-2">HACCP 인증 여부</label>
                     <label class="flex items-center">
                         <input type="checkbox" id="simpleHaccp" class="mr-2">
@@ -160,6 +166,12 @@
                     <label class="block font-bold mb-2">⚠️ 주의사항 (선택)</label>
                     <input type="text" id="detailedCaution" class="w-full p-3 border border-gray-300 rounded-lg" 
                            placeholder="예: 매운맛 주의, 알레르기 주의 등">
+                </div>
+                <div>
+                    <label class="block font-bold mb-2">배송 정보 *</label>
+                    <input type="text" id="detailedShipping" class="w-full p-3 border border-gray-300 rounded-lg" 
+                           placeholder="예: 3만원 이상 구매시 전국 무료배송" 
+                           value="3만원 이상 구매시 전국 무료배송">
                 </div>
                 <div>
                     <label class="flex items-center">
@@ -266,6 +278,7 @@
                         productName: productName,
                         category: document.getElementById('simpleCategory').value,
                         caution: document.getElementById('simpleCaution').value,
+                        shippingInfo: document.getElementById('simpleShipping').value,
                         haccp: document.getElementById('simpleHaccp').checked,
                         images: document.getElementById('simpleImages').value.split('\n').filter(url => url.trim()),
                         reference: document.getElementById('simpleReference').value
@@ -312,6 +325,7 @@
                     ingredients: document.getElementById('ingredients').value,
                     characteristics: document.getElementById('characteristics').value,
                     caution: document.getElementById('detailedCaution').value,
+                    shippingInfo: document.getElementById('detailedShipping').value,
                     haccp: document.getElementById('detailedHaccp').checked,
                     images: document.getElementById('detailedImages').value.split('\n').filter(url => url.trim())
                 };

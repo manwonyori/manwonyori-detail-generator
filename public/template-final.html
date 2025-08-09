@@ -249,12 +249,8 @@
                 <div class="text-6xl mb-6">
                     <i class="fas fa-shipping-fast"></i>
                 </div>
-                <h2 class="text-3xl font-black mb-4">무료배송 혜택!</h2>
-                <p class="text-xl leading-relaxed mb-6">
-                    3만원 이상 구매시 전국 무료배송<br>
-                    만원요리 최씨남매와 함께라면<br>
-                    배송비 걱정 없이 장보기 완성!
-                </p>
+                <h2 class="text-3xl font-black mb-4">{{shippingTitle}}</h2>
+                <p class="text-xl leading-relaxed mb-6">{{shippingContent}}</p>
                 <div class="flex flex-wrap justify-center gap-3">
                     <span class="badge-responsive" style="background: white; color: #10B981;">
                         📦 안전포장
@@ -314,26 +310,35 @@
                 </div>
             </div>
             
-            <!-- 판매자 정보 & 제품 정보 -->
+            <!-- 판매원 정보 (고정) -->
+            <h2 class="section-title">판매원 정보</h2>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="card">
-                    <h3 class="title-responsive text-yellow-600 mb-4 text-center">판매자 정보</h3>
+                    <h3 class="title-responsive text-yellow-600 mb-4 text-center">회사 정보</h3>
                     <div class="company-grid">
-                        <span class="font-bold">상호명:</span><span>㈜값진한끼</span>
-                        <span class="font-bold">대표자:</span><span>박기환</span>
-                        <span class="font-bold">사업자번호:</span><span>582-81-02848</span>
-                        <span class="font-bold">주소:</span><span>경기도 파주시 경의로 1246, 11층 1105-19호</span>
-                        <span class="font-bold">연락처:</span><span>070-8835-2885</span>
-                        <span class="font-bold">이메일:</span><span>we@manwonyori.com</span>
-                        <span class="font-bold">통신판매업:</span><span>2025-경기파주-2195호</span>
+                        <span class="font-bold">상호</span><span>㈜값진한끼</span>
+                        <span class="font-bold">대표자</span><span>고혜숙</span>
+                        <span class="font-bold">사업자등록번호</span><span>434-86-03863</span>
+                        <span class="font-bold">통신판매업</span><span>2025-경기파주-2195호</span>
                     </div>
                 </div>
                 
                 <div class="card">
-                    <h3 class="title-responsive text-yellow-600 mb-4 text-center">제품 정보</h3>
-                    <div class="company-grid" id="productInfo">
-                        <!-- 제품 정보가 여기에 삽입됩니다 -->
+                    <h3 class="title-responsive text-yellow-600 mb-4 text-center">연락처</h3>
+                    <div class="company-grid">
+                        <span class="font-bold">주소</span><span>경기도 파주시 경의로 1246, 11층 1105-19호</span>
+                        <span class="font-bold">전화</span><span>070-8835-2885</span>
+                        <span class="font-bold">이메일</span><span>we@manwonyori.com</span>
+                        <span class="font-bold">사이트</span><span>만원요리 최씨남매</span>
                     </div>
+                </div>
+            </div>
+            
+            <!-- 제품 정보 -->
+            <div class="card mt-6">
+                <h3 class="title-responsive text-yellow-600 mb-4 text-center">제품 정보</h3>
+                <div class="company-grid" id="productInfo">
+                    <!-- 제품 정보가 여기에 삽입됩니다 -->
                 </div>
             </div>
             
