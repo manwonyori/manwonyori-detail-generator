@@ -411,6 +411,7 @@ function generateFallbackData(requestData) {
     badge2: "빠른 배송",
     badge3: "안전 포장",
     productCleanName: cleanName,
+    storyContent: `${cleanName}은(는) 오랜 전통과 노하우를 바탕으로 만들어진 특별한 제품입니다. 만원요리 최씨남매가 엄선한 이 제품은 최고의 재료와 정성으로 만들어져 특별한 맛을 자랑합니다.`,
     why1Title: "엄선된 재료",
     why1Text: "최고급 원재료만을 사용하여 만든 프리미엄 제품입니다.",
     why2Title: "전문가 검증",
@@ -426,11 +427,9 @@ function generateFallbackData(requestData) {
     storageType: requestData.storageType || "냉동",
     shippingTitle: "무료배송 혜택!",
     shippingContent: `${requestData.shippingInfo || '3만원 이상 구매시 전국 무료배송'}<br>만원요리 최씨남매와 함께라면<br>배송비 걱정 없이 장보기 완성!`,
-    footerTitle: `집에서 만나는 ${cleanName}의 맛!`,
-    footerSubtitle: `만원요리 최씨남매가 검증한 ${cleanName}을<br>이제 간편하게 집에서 만나보세요!`,
-    footerBadge1: "대용량 구성",
-    footerBadge2: requestData.haccp ? "HACCP 인증" : "안전 인증",
-    footerBadge3: "합배송 가능"
+    ingredientTable: '',
+    nutritionTable: '',
+    allergyInfo: ''
   };
 }
 
