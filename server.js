@@ -397,7 +397,7 @@ function bindDataToTemplate(template, data, requestData) {
   return html;
 }
 
-// 강화된 SEO 생성
+// 강화된 SEO 생성 (카페24 최적화)
 function generateEnhancedSEO(productName, category) {
   const year = new Date().getFullYear();
   const brandMatch = productName.match(/\[(.+?)\]/);
@@ -406,57 +406,98 @@ function generateEnhancedSEO(productName, category) {
   
   const keywords = [];
   
-  // 브랜드 조합
+  // 1. 브랜드 조합 (10개)
   keywords.push(
     '만원요리', '최씨남매', '만원요리최씨남매',
     `만원요리${cleanName}`, `최씨남매${cleanName}`,
-    '만원요리추천', '최씨남매추천', '만원요리배송',
-    '최씨남매쇼핑', '만원요리할인', '최씨남매이벤트',
-    '만원요리신제품', '최씨남매베스트', '만원요리세일',
-    '최씨남매특가'
+    '만원요리추천', '최씨남매추천', '만원요리직구',
+    '최씨남매정품', '만원요리공식'
   );
   
-  // 제품명 변형
+  // 2. 제품명 변형 (10개)
   const nameVariations = generateNameVariations(cleanName);
-  keywords.push(...nameVariations);
+  keywords.push(...nameVariations.slice(0, 10));
   
-  // 카테고리 관련
+  // 3. 카테고리 연관 (10개)
   if (category) {
     keywords.push(
       category, `${category}추천`, `${category}베스트`,
-      `${category}쇼핑`, `${category}배송`, `${category}할인`,
-      `${category}인기`, `${category}맛집`, `${category}판매`,
-      `${category}구매`
+      `${category}1위`, `${category}인기`, `${category}맛집`,
+      `${category}신상`, `${category}할인`, `${category}특가`,
+      `${category}무료배송`
     );
   }
   
-  // 브랜드별 키워드
-  if (brand) {
-    keywords.push(
-      brand, `${brand}제품`, `${brand}추천`,
-      `${brand}${cleanName}`, `인생도매`, `인생${cleanName}`,
-      `${brand}맛집`, `${brand}베스트`, `${brand}할인`,
-      `${brand}구매`
-    );
-  }
-  
-  // 일반 키워드
+  // 4. 구매 의도 키워드 (10개)
   keywords.push(
-    '냉동식품', '간편식', '밀키트', '집밥', '혼밥',
-    '배달음식', '온라인장보기', '식료품쇼핑', '푸드마켓',
-    '먹거리쇼핑'
+    `${cleanName}구매`, `${cleanName}주문`, `${cleanName}배송`,
+    `${cleanName}가격`, `${cleanName}최저가`, `${cleanName}할인`,
+    `${cleanName}쿠폰`, `${cleanName}이벤트`, `${cleanName}후기`,
+    `${cleanName}리뷰`
   );
   
-  const uniqueKeywords = [...new Set(keywords.filter(k => k))];
+  // 5. 롱테일 키워드 (10개)
+  keywords.push(
+    `${cleanName} 어디서 파나요`, `${cleanName} 맛있나요`,
+    `${cleanName} 조리법`, `${cleanName} 보관법`,
+    `${cleanName} 유통기한`, `집에서 ${cleanName}`,
+    `간편하게 ${cleanName}`, `${cleanName} 대용량`,
+    `${cleanName} 선물용`, `${cleanName} 가성비`
+  );
+  
+  // 6. 브랜드별 키워드
+  if (brand) {
+    keywords.push(
+      brand, `${brand}정품`, `${brand}직구`,
+      `${brand}${cleanName}`, `${brand}공식`
+    );
+  }
+  
+  // 7. 시즌/트렌드 키워드
+  keywords.push(
+    '2025신상', '유튜브추천', '인플루언서픽',
+    'SNS화제', '품절대란', '재입고'
+  );
+  
+  // 중복 제거 및 50개 제한
+  const uniqueKeywords = [...new Set(keywords.filter(k => k))].slice(0, 50);
+  
+  // 상품 요약/간략 설명 (20자 이내)
+  const shortName = cleanName.length > 20 ? cleanName.substring(0, 17) + '...' : cleanName;
+  const summary = `${shortName} 특가`;
+  const brief = `만원요리 ${category || '추천'}상품`;
+  
+  // 다국어 번역
+  const translations = {
+    english: `${cleanName} - Korean Premium Food by Manwonyori`,
+    chinese: `${cleanName} - 韩国正品美食 万元料理`,
+    japanese: `${cleanName} - 韓国グルメ マンウォンヨリ`
+  };
+  
+  // Alt 텍스트
+  const altText = `만원요리 최씨남매 ${cleanName} ${category || ''} 상품 이미지`;
   
   return {
-    title: `${productName} | 만원요리 최씨남매`,
-    description: `${productName} - 만원요리 최씨남매 검증 상품. ${category || ''} 카테고리 베스트셀러. 전국 배송, 신선도 보장`,
-    keywords: uniqueKeywords.join(','),
+    // 기본 정보
+    title: `${productName} 최저가 | 만원요리 최씨남매 공식`,
     author: '만원요리 최씨남매',
     copyright: `© ${year} 만원요리 최씨남매. All rights reserved.`,
-    summary: cleanName.substring(0, 20),
-    brief: `${category || '추천'} ${brand || ''} 상품`,
+    
+    // 카페24 필수 SEO
+    summary: summary,  // 상품 요약설명 (20자)
+    brief: brief,      // 상품 간략설명 (20자)
+    
+    // 메타태그
+    description: `${productName} 구매는 만원요리 최씨남매! 유튜브 38만 구독자가 인정한 ${category || '맛집'} 상품. ✓정품보장 ✓무료배송 ✓최저가보상`,
+    keywords: uniqueKeywords.join(','),
+    
+    // 다국어 지원
+    translations: translations,
+    
+    // 이미지 Alt
+    altText: altText,
+    
+    // 통계
     keywordCount: uniqueKeywords.length
   };
 }
