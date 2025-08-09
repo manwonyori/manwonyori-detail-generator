@@ -293,22 +293,7 @@ function bindDataToTemplate(template, data, requestData) {
     // 템플릿 기본값이 YouTube 표시, HACCP 숨김이므로 별도 처리 불필요
   }
   
-  // 제품 정보 섹션
-  let productInfoHTML = '';
-  if (requestData.composition) {
-    productInfoHTML += `<span class="font-bold">구성:</span><span>${requestData.composition}</span>`;
-  }
-  if (requestData.expiry) {
-    productInfoHTML += `<span class="font-bold">소비기한:</span><span>${requestData.expiry}</span>`;
-  }
-  if (requestData.productType) {
-    productInfoHTML += `<span class="font-bold">제품종류:</span><span>${requestData.productType}</span>`;
-  }
-  if (requestData.storageType) {
-    productInfoHTML += `<span class="font-bold">유형:</span><span>${requestData.storageType}</span>`;
-  }
-  productInfoHTML += `<span class="font-bold">포장방식:</span><span>스킨포장</span>`;
-  productInfoHTML += `<span class="font-bold">합배송:</span><span>7세트까지 가능</span>`;
+  // 제품 사양 섹션 준비
   
   // 제품 사양을 스토리 섹션에 표시
   const specsCards = [];
@@ -338,16 +323,16 @@ function bindDataToTemplate(template, data, requestData) {
       </div>`);
   }
   
-  // 배송 정보 카드
-  specsCards.push(`
-    <div class="card">
-      <h4 class="font-bold mb-3">🚚 배송 정보</h4>
-      <div class="space-y-2 text-sm">
-        <div><span class="font-semibold">포장방식:</span> 스킨포장</div>
-        <div><span class="font-semibold">합배송:</span> 7세트까지 가능</div>
-        ${requestData.shippingInfo ? `<div><span class="font-semibold">배송비:</span> ${requestData.shippingInfo.replace(/\n/g, '<br>')}</div>` : ''}
-      </div>
-    </div>`);
+  // 배송 정보 카드 (배송정보가 있을 때만 표시)
+  if (requestData.shippingInfo) {
+    specsCards.push(`
+      <div class="card">
+        <h4 class="font-bold mb-3">🚚 배송 정보</h4>
+        <div class="space-y-2 text-sm">
+          <div>${requestData.shippingInfo.replace(/\n/g, '<br>')}</div>
+        </div>
+      </div>`);
+  }
   
   if (specsCards.length > 0) {
     html = html.replace('<!-- 제품 사양이 여기에 표시됩니다 -->', specsCards.join('\n'));
