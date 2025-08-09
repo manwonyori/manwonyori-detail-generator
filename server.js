@@ -319,8 +319,8 @@ ${isDetailedMode ? `- 구성: ${data.composition}
   "how2Title": "프로 활용법 (특별한 경험)",
   "how2Text": "제품 가치를 200% 끌어올리는 꿀팁",
   "storageType": "${data.storageType || '냉동'}",
-  "shippingTitle": "${requestData.shippingTitle || '배송 정보'}",
-  "shippingContent": "${requestData.shippingInfo || '배송 정보를 입력해주세요'}",
+  "shippingTitle": "배송 정보",
+  "shippingContent": "배송 정보를 입력해주세요",
 }
 
 **카피라이팅 원칙:**
@@ -345,6 +345,14 @@ function bindDataToTemplate(template, data, requestData) {
   
   // 제품명 바인딩
   html = html.replace(/{{productName}}/g, requestData.productName);
+  
+  // 배송 정보 바인딩 (사용자 입력값으로 교체)
+  if (requestData.shippingTitle) {
+    html = html.replace(/{{shippingTitle}}/g, requestData.shippingTitle);
+  }
+  if (requestData.shippingInfo) {
+    html = html.replace(/{{shippingContent}}/g, requestData.shippingInfo.replace(/\n/g, '<br>'));
+  }
   
   // 이미지 섹션 처리
   if (requestData.images && requestData.images.length > 0) {
