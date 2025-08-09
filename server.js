@@ -248,7 +248,6 @@ ${isDetailedMode ? `- 구성: ${data.composition}
   "shippingTitle": "무료배송 혜택!",
   "shippingContent": "${data.shippingInfo ? data.shippingInfo.replace(/\n/g, '<br>') : '3만원 이상 구매시 전국 무료배송<br>만원요리 최씨남매와 함께라면<br>배송비 걱정 없이 장보기 완성!'}",
   "ingredientTable": "${data.ingredients ? '성분을 테이블 HTML <tr> 태그로 파싱' : ''}",
-  "nutritionTable": "영양정보 테이블 HTML",
   "allergyInfo": "알레르기 정보"
 }
 
@@ -372,17 +371,6 @@ function bindDataToTemplate(template, data, requestData) {
         ingredientsHTML += `
           <h4 class="font-bold mb-3 text-lg">🍜 원재료 및 성분</h4>
           <div class="p-4 bg-gray-50 rounded">${requestData.ingredients}</div>`;
-      }
-      
-      // 영양정보 테이블
-      if (data.nutritionTable) {
-        ingredientsHTML += `
-          <div class="mt-6">
-            <h4 class="font-bold mb-3 text-lg">📈 영양정보</h4>
-            <table class="ingredient-table">
-              ${data.nutritionTable}
-            </table>
-          </div>`;
       }
       
       // 알레르기 정보
@@ -570,7 +558,6 @@ function generateFallbackData(requestData) {
     shippingTitle: "무료배송 혜택!",
     shippingContent: requestData.shippingInfo ? requestData.shippingInfo.replace(/\n/g, '<br>') : '3만원 이상 구매시 전국 무료배송<br>만원요리 최씨남매와 함께라면<br>배송비 걱정 없이 장보기 완성!',
     ingredientTable: '',
-    nutritionTable: '',
     allergyInfo: ''
   };
 }
