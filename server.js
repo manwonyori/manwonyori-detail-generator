@@ -346,12 +346,16 @@ function bindDataToTemplate(template, data, requestData) {
   // 제품명 바인딩
   html = html.replace(/{{productName}}/g, requestData.productName);
   
-  // 배송 정보 바인딩 (사용자 입력값으로 교체)
+  // 배송 정보 바인딩 (사용자 입력값으로 교체) - AI 생성값을 덮어씀
   if (requestData.shippingTitle) {
-    html = html.replace(/{{shippingTitle}}/g, requestData.shippingTitle);
+    // AI가 생성한 제목을 사용자 입력으로 직접 교체
+    html = html.replace(/<h2 class="text-3xl font-black mb-4">[^<]*<\/h2>/, 
+                       `<h2 class="text-3xl font-black mb-4">${requestData.shippingTitle}</h2>`);
   }
   if (requestData.shippingInfo) {
-    html = html.replace(/{{shippingContent}}/g, requestData.shippingInfo.replace(/\n/g, '<br>'));
+    // AI가 생성한 내용을 사용자 입력으로 직접 교체
+    html = html.replace(/<p class="text-xl leading-relaxed mb-6">[^<]*<\/p>/, 
+                       `<p class="text-xl leading-relaxed mb-6">${requestData.shippingInfo.replace(/\n/g, '<br>')}</p>`);
   }
   
   // 이미지 섹션 처리
