@@ -410,6 +410,39 @@ ${isDetailedMode ? `- 구성: ${data.composition}
 function bindDataToTemplate(template, data, requestData) {
   let html = template;
   
+  // 제품특성 기반 콘텐츠 개선 (후처리)
+  if (requestData.characteristics && data.storyContent) {
+    // 스토리에 특성 자연스럽게 통합
+    if (data.storyContent.includes('오랜 전통과 노하우를 바탕으로')) {
+      // Fallback 데이터인 경우 특성 기반으로 교체
+      const characteristics = requestData.characteristics;
+      const productName = requestData.productName.replace(/\[.*?\]/, '').trim();
+      
+      data.storyContent = `${productName}은(는) ${characteristics}라는 특별한 매력을 가진 독특한 제품입니다. 만원요리 최씨남매가 이 제품을 선택한 이유는 바로 이런 차별화된 특성 때문입니다. 이 제품만의 고유한 특징이 고객들에게 잊지 못할 특별한 경험을 선사할 것입니다.`;
+    } else {
+      // AI가 생성한 경우 특성 추가
+      data.storyContent = data.storyContent + ` 특히 이 제품의 "${requestData.characteristics}"라는 독특한 특성이 다른 제품과의 확실한 차별점을 만들어냅니다.`;
+    }
+    
+    // Why 섹션에 특성 반영
+    if (data.why1Text && data.why1Text.includes('최고급 원재료')) {
+      data.why1Text = `${requestData.characteristics}로 인해 고객들이 경험할 수 있는 특별한 가치와 혜택을 제공합니다.`;
+    }
+    
+    if (data.why2Text && data.why2Text.includes('식품 전문가들이')) {
+      data.why2Text = `"${requestData.characteristics}"라는 독특한 특성으로 경쟁제품과는 완전히 다른 차원의 만족감을 선사합니다.`;
+    }
+    
+    // How 섹션에 특성 반영  
+    if (data.how1Text && data.how1Text.includes('포장을 뜯고')) {
+      data.how1Text = `이 제품의 "${requestData.characteristics}" 특성을 최대한 즐기기 위한 기본 활용법을 소개합니다.`;
+    }
+    
+    if (data.how2Text && data.how2Text.includes('여러 요리에')) {
+      data.how2Text = `"${requestData.characteristics}"의 매력을 200% 끌어올리는 프로만 아는 특별한 활용 노하우입니다.`;
+    }
+  }
+  
   // 기본 데이터 바인딩
   Object.keys(data).forEach(key => {
     const regex = new RegExp(`{{${key}}}`, 'g');
