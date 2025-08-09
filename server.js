@@ -28,6 +28,17 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    openai: process.env.OPENAI_API_KEY ? '✅ Configured' : '❌ Missing',
+    claude: process.env.CLAUDE_API_KEY ? '✅ Configured' : '❌ Missing',
+    provider: AI_PROVIDER,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Template loading
 let templateHTML = '';
 async function loadTemplate() {
@@ -70,6 +81,10 @@ app.post('/api/generate', async (req, res) => {
     } catch (claudeError) {
       // OpenAI로 폴백 또는 기본 사용
       console.log('Using OpenAI API...');
+      
+      if (!process.env.OPENAI_API_KEY) {
+        throw new Error('OpenAI API key is not configured. Please add OPENAI_API_KEY to environment variables.');
+      }
       
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo-16k", // 16K 토큰 버전
