@@ -229,8 +229,6 @@ ${isDetailedMode ? `- 구성: ${data.composition}
   "why2Text": "장점 설명 2",
   "why3Title": "장점 제목 3",
   "why3Text": "장점 설명 3",
-  "why4Title": "장점 제목 4",
-  "why4Text": "장점 설명 4",
   "how1Title": "활용법 1",
   "how1Text": "자세한 활용 방법 설명 1",
   "how2Title": "활용법 2",
@@ -269,9 +267,11 @@ function bindDataToTemplate(template, data, requestData) {
     html = html.replace('<!-- 이미지가 여기에 삽입됩니다 -->', imagesHTML);
   }
   
-  // HACCP 카드 표시/숨김
-  if (!requestData.haccp) {
-    html = html.replace('id="haccpCard"', 'id="haccpCard" style="display: none;"');
+  // HACCP와 YouTube 카드 토글
+  if (requestData.haccp === true) {
+    // HACCP 체크시: YouTube 카드 숨기고 HACCP 카드 표시
+    html = html.replace('id="youtubeCard"', 'id="youtubeCard" style="display: none;"');
+    html = html.replace('id="haccpCard" style="display: none;"', 'id="haccpCard"');
   }
   
   // 제품 정보 섹션
@@ -474,10 +474,8 @@ function generateFallbackData(requestData) {
     why1Text: "최고급 원재료만을 사용하여 만든 프리미엄 제품입니다.",
     why2Title: "전문가 검증",
     why2Text: "식품 전문가들이 직접 검증한 안전한 제품입니다.",
-    why3Title: "합리적 가격",
-    why3Text: "최상의 품질을 합리적인 가격으로 제공합니다.",
-    why4Title: "신선도 보장",
-    why4Text: "철저한 온도관리로 신선함을 그대로 전달합니다.",
+    why3Title: "신선도 보장",
+    why3Text: "철저한 온도관리로 신선함을 그대로 전달합니다.",
     how1Title: "간편 조리",
     how1Text: "포장을 뜯고 간단한 조리만으로 맛있게 즐기실 수 있습니다.",
     how2Title: "다양한 활용",
