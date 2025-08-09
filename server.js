@@ -288,6 +288,9 @@ function bindDataToTemplate(template, data, requestData) {
     // HACCP 체크시: YouTube 카드 숨기고 HACCP 카드 표시
     html = html.replace('id="youtubeCard"', 'id="youtubeCard" style="display: none;"');
     html = html.replace('id="haccpCard" style="display: none;"', 'id="haccpCard"');
+  } else {
+    // HACCP 미체크시: 기본 상태 유지 (YouTube 표시, HACCP 숨김)
+    // 템플릿 기본값이 YouTube 표시, HACCP 숨김이므로 별도 처리 불필요
   }
   
   // 제품 정보 섹션
@@ -307,7 +310,25 @@ function bindDataToTemplate(template, data, requestData) {
   productInfoHTML += `<span class="font-bold">포장방식:</span><span>스킨포장</span>`;
   productInfoHTML += `<span class="font-bold">합배송:</span><span>7세트까지 가능</span>`;
   
-  html = html.replace('<!-- 제품 정보가 여기에 삽입됩니다 -->', productInfoHTML);
+  // 제품 사양을 스토리 섹션에 표시
+  if (productInfoHTML) {
+    const specsHTML = `
+      <div class="card">
+        <h4 class="font-bold mb-3">📦 제품 사양</h4>
+        <div class="space-y-2 text-sm">
+          ${productInfoHTML.replace(/<span/g, '<div><span').replace(/<\/span><span/g, '</span> <span').replace(/<\/span>/g, '</span></div>')}
+        </div>
+      </div>
+      <div class="card">
+        <h4 class="font-bold mb-3">🚚 배송 정보</h4>
+        <div class="space-y-2 text-sm">
+          <div><span class="font-semibold">포장방식:</span> 스킨포장</div>
+          <div><span class="font-semibold">합배송:</span> 7세트까지 가능</div>
+          ${requestData.shippingInfo ? `<div><span class="font-semibold">배송비:</span> ${requestData.shippingInfo.replace(/\n/g, '<br>')}</div>` : ''}
+        </div>
+      </div>`;
+    html = html.replace('<!-- 제품 사양이 여기에 표시됩니다 -->', specsHTML);
+  }
   
   // 품목제조보고서 섹션 (이미지 또는 테이블)
   if (requestData.ingredientsImage || data.ingredientTable || requestData.ingredients) {
