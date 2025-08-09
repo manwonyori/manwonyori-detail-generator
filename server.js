@@ -76,7 +76,7 @@ For missing fields, use empty string. Return only JSON without any explanation.`
       messages: [
         {
           role: "system",
-          content: "You are an expert at structuring Korean product information. Return only valid JSON format. All values should be in Korean."
+          content: "너는 10년차 퍼포먼스 마케터이자 소비 심리학 전문가다. '만원요리 최씨남매' (유튜브 38만 구독자) 브랜드의 제품을 판매하는 텍스트 파싱 전문가다. 반드시 JSON 형식으로만 응답하라."
         },
         {
           role: "user",
@@ -155,7 +155,7 @@ app.post('/api/generate', async (req, res) => {
         messages: [
           {
             role: "system",
-            content: "당신은 '만원요리 최씨남매' 브랜드의 전문 콘텐츠 작성자입니다. JSON 형식으로만 응답하세요."
+            content: "너는 10년차 퍼포먼스 마케터이자 소비 심리학 전문가다. '만원요리 최씨남매' (유튜브 38만 구독자) 브랜드의 제품을 판매하는 카피를 작성한다. 반드시 JSON 형식으로만 응답하라."
           },
           {
             role: "user",
@@ -202,7 +202,15 @@ app.post('/api/generate', async (req, res) => {
 function generateDataPrompt(data) {
   const isDetailedMode = data.composition || data.ingredients;
   
-  return `당신은 "만원요리 최씨남매" 브랜드의 콘텐츠 전문가입니다.
+  return `**너는 10년차 퍼포먼스 마케터이자, 소비 심리학에 기반한 카피라이팅 전문가 + 브랜드 스토리텔러 + UX/UI 디자이너이다.**
+
+너의 임무는 아래 제품 정보를 분석하여, 잠재고객을 실제 구매고객으로 전환시키는 가장 효율적인 유튜브 쇼핑 상세페이지를 기획하고, **제품의 깊은 역사와 스토리를 발굴하여** 모든 텍스트 콘텐츠를 완성하는 것이다.
+
+"만원요리 최씨남매" 브랜드 아이덴티티:
+- 유튜브 구독자 38만명의 신뢰
+- MZ세대가 사랑하는 가성비 맛집 큐레이터
+- 정직한 리뷰와 진짜 맛있는 것만 소개
+
 다음 제품 정보를 바탕으로 JSON 데이터만 생성해주세요.
 
 제품 정보:
@@ -216,34 +224,42 @@ ${isDetailedMode ? `- 구성: ${data.composition}
 - HACCP: ${data.haccp ? '인증' : '미인증'}
 - 주의사항: ${data.caution || '없음'}
 
+**[GUIDELINES v5.0 - 퍼포먼스 마케팅 기반]**
+
 다음 JSON 형식으로만 응답하세요:
 {
-  "heroTitle": "MZ세대가 주목하는 역사적 스토리를 담은 제목",
-  "heroSubtitle": "제품의 매력을 2줄로 설명",
-  "badge1": "${data.badge1 || '핵심 특징 1'}",
-  "badge2": "${data.badge2 || '핵심 특징 2'}",
+  "heroTitle": "🔥구매욕구를 자극하는 강력한 헤드라인 (이모지 포함, 희소성/긴급성 강조)",
+  "heroSubtitle": "제품의 핵심 가치를 2줄로 전달 (감성적 혜택 + 기능적 혜택)",
+  "badge1": "${data.badge1 || '판매 1위'}",
+  "badge2": "${data.badge2 || '한정수량'}",
   "productCleanName": "브랜드 제거한 깨끗한 제품명",
-  "why1Title": "장점 제목 1",
-  "why1Text": "장점 설명 1",
-  "why2Title": "장점 제목 2",
-  "why2Text": "장점 설명 2",
-  "why3Title": "장점 제목 3",
-  "why3Text": "장점 설명 3",
-  "how1Title": "활용법 1",
-  "how1Text": "자세한 활용 방법 설명 1",
-  "how2Title": "활용법 2",
-  "how2Text": "자세한 활용 방법 설명 2",
+  "storyContent": "깊이 있는 제품 스토리 발굴 (3-4문장): 1)역사적 기원과 전통 2)현대적 재해석 3)만원요리가 선택한 이유 4)구매자가 얻을 특별한 경험. 스토리텔링으로 감성을 자극하고 제품 가치를 극대화하세요.",
+  "why1Title": "가장 강력한 구매 이유 (고객 페인포인트 해결)",
+  "why1Text": "구체적인 혜택과 차별점 설명 (숫자/데이터 포함시 신뢰도 UP)",
+  "why2Title": "두번째 구매 이유 (경쟁제품 대비 우위)",
+  "why2Text": "왜 다른 제품이 아닌 이 제품인지 명확히",
+  "why3Title": "세번째 구매 이유 (사회적 증명/권위)",
+  "why3Text": "38만 구독자의 선택, 리뷰, 인증 등 신뢰 요소",
+  "how1Title": "기본 활용법 (즉시 실행 가능)",
+  "how1Text": "누구나 쉽게 따라할 수 있는 구체적 방법",
+  "how2Title": "프로 활용법 (특별한 경험)",
+  "how2Text": "제품 가치를 200% 끌어올리는 꿀팁",
   "storageType": "${data.storageType || '냉동'}",
   "shippingTitle": "무료배송 혜택!",
   "shippingContent": "${data.shippingInfo ? data.shippingInfo.replace(/\n/g, '<br>') : '3만원 이상 구매시 전국 무료배송<br>만원요리 최씨남매와 함께라면<br>배송비 걱정 없이 장보기 완성!'}",
-  "footerTitle": "제품의 핵심 메시지 (예: 집에서 만나는 함흥의 그 맛!)",
-  "footerSubtitle": "만원요리 최씨남매가 검증한 [제품명]을<br>이제 간편하게 집에서 만나보세요!",
-  "footerBadge1": "제품 특징 1",
-  "footerBadge2": "제품 특징 2",
-  "footerBadge3": "제품 특징 3"
+  "ingredientTable": "${data.ingredients ? '성분을 테이블 HTML <tr> 태그로 파싱' : ''}",
+  "nutritionTable": "영양정보 테이블 HTML",
+  "allergyInfo": "알레르기 정보"
 }
 
-중요: 반드시 유효한 JSON만 반환하고, 설명이나 주석 없이 JSON만 출력하세요.`;
+**카피라이팅 원칙:**
+1. AIDA 공식 적용 (Attention-Interest-Desire-Action)
+2. 손실회피 심리 활용 ("놓치면 후회하는...")
+3. 사회적 증명 강조 (38만 구독자, 베스트셀러)
+4. 구체적 숫자와 데이터로 신뢰도 구축
+5. 감성(스토리) + 이성(스펙) 균형있게 배치
+
+반드시 유효한 JSON만 반환하고, 설명이나 주석 없이 JSON만 출력하세요.`;
 }
 
 // 템플릿에 데이터 바인딩
