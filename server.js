@@ -49,34 +49,34 @@ app.post('/api/parse', async (req, res) => {
     }
     
     const parsePrompt = `
-다음 제품 정보 텍스트를 분석해서 JSON 형식으로 구조화해주세요.
-텍스트에서 제품명, 구성, 소비기한, 제품종류, 유형, 성분, 특성, 주의사항, 배송정보 등을 추출하세요.
+Parse the following Korean product information text and structure it into JSON format.
+Extract product name, composition, expiry date, product type, storage type, ingredients, characteristics, cautions, and shipping info.
 
-텍스트:
+Text:
 ${text}
 
-다음 JSON 형식으로만 응답하세요:
+Return ONLY this JSON format (values in Korean):
 {
-  "productName": "제품명",
-  "composition": "구성 및 규격",
-  "expiry": "소비기한",
-  "productType": "제품종류",
-  "storageType": "유형 (냉동/냉장/실온)",
-  "ingredients": "성분/원재료",
-  "characteristics": "제품특성",
-  "caution": "주의사항",
-  "shippingInfo": "배송정보",
+  "productName": "product name from text",
+  "composition": "composition and specifications",
+  "expiry": "expiry date",
+  "productType": "product type",
+  "storageType": "storage type (냉동/냉장/실온)",
+  "ingredients": "ingredients/raw materials",
+  "characteristics": "product characteristics",
+  "caution": "cautions",
+  "shippingInfo": "shipping information",
   "haccp": false
 }
 
-없는 필드는 빈 문자열로 처리하세요. JSON만 반환하고 다른 설명은 하지 마세요.`;
+For missing fields, use empty string. Return only JSON without any explanation.`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
-          content: "당신은 제품 정보를 구조화하는 전문가입니다. JSON 형식으로만 응답하세요."
+          content: "You are an expert at structuring Korean product information. Return only valid JSON format. All values should be in Korean."
         },
         {
           role: "user",
