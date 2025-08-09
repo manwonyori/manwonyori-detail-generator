@@ -89,15 +89,17 @@
                            placeholder="예: 매운맛 주의, 알레르기 주의 등">
                 </div>
                 <div>
+                    <label class="block font-bold mb-2">배송 제목 (선택)</label>
+                    <input type="text" id="simpleShippingTitle" class="w-full p-3 border border-gray-300 rounded-lg" 
+                           placeholder="예: 무료배송 혜택!, 빠른배송 가능!">
+                </div>
+                <div>
                     <label class="block font-bold mb-2">배송 정보 * (여러 줄 입력 가능)</label>
                     <textarea id="simpleShipping" rows="4" class="w-full p-4 border border-gray-300 rounded-lg" 
                               placeholder="예:
-무료배송 혜택!
 3만원 이상 구매시 전국 무료배송
 만원요리 최씨남매와 함께라면
-배송비 걱정 없이 장보기 완성!">3만원 이상 구매시 전국 무료배송
-만원요리 최씨남매와 함께라면
-배송비 걱정 없이 장보기 완성!</textarea>
+배송비 걱정 없이 장보기 완성!"></textarea>
                 </div>
                 <div>
                     <label class="block font-bold mb-2">HACCP 인증 여부</label>
@@ -205,15 +207,17 @@
                            placeholder="예: 매운맛 주의, 알레르기 주의 등">
                 </div>
                 <div>
+                    <label class="block font-bold mb-2">배송 제목 (선택)</label>
+                    <input type="text" id="detailedShippingTitle" class="w-full p-3 border border-gray-300 rounded-lg" 
+                           placeholder="예: 무료배송 혜택!, 빠른배송 가능!">
+                </div>
+                <div>
                     <label class="block font-bold mb-2">배송 정보 * (여러 줄 입력 가능)</label>
                     <textarea id="detailedShipping" rows="4" class="w-full p-3 border border-gray-300 rounded-lg" 
                               placeholder="예:
-무료배송 혜택!
 3만원 이상 구매시 전국 무료배송
 만원요리 최씨남매와 함께라면
-배송비 걱정 없이 장보기 완성!">3만원 이상 구매시 전국 무료배송
-만원요리 최씨남매와 함께라면
-배송비 걱정 없이 장보기 완성!</textarea>
+배송비 걱정 없이 장보기 완성!"></textarea>
                 </div>
                 <div>
                     <label class="flex items-center">
@@ -361,6 +365,7 @@
                         badge1: document.getElementById('simpleBadge1').value,
                         badge2: document.getElementById('simpleBadge2').value,
                         caution: document.getElementById('simpleCaution').value,
+                        shippingTitle: document.getElementById('simpleShippingTitle').value,
                         shippingInfo: document.getElementById('simpleShipping').value,
                         haccp: document.getElementById('simpleHaccp').checked,
                         images: document.getElementById('simpleImages').value.split('\n').filter(url => url.trim()),
@@ -416,6 +421,7 @@
                     badge1: document.getElementById('detailedBadge1').value,
                     badge2: document.getElementById('detailedBadge2').value,
                     caution: document.getElementById('detailedCaution').value,
+                    shippingTitle: document.getElementById('detailedShippingTitle').value,
                     shippingInfo: document.getElementById('detailedShipping').value,
                     haccp: document.getElementById('detailedHaccp').checked,
                     images: document.getElementById('detailedImages').value.split('\n').filter(url => url.trim()),

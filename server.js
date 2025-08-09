@@ -319,9 +319,8 @@ ${isDetailedMode ? `- 구성: ${data.composition}
   "how2Title": "프로 활용법 (특별한 경험)",
   "how2Text": "제품 가치를 200% 끌어올리는 꿀팁",
   "storageType": "${data.storageType || '냉동'}",
-  "shippingTitle": "무료배송 혜택!",
-  "shippingContent": "${data.shippingInfo ? data.shippingInfo.replace(/\n/g, '<br>') : '3만원 이상 구매시 전국 무료배송<br>만원요리 최씨남매와 함께라면<br>배송비 걱정 없이 장보기 완성!'}",
-  "allergyInfo": "알레르기 정보"
+  "shippingTitle": "${requestData.shippingTitle || '배송 정보'}",
+  "shippingContent": "${requestData.shippingInfo || '배송 정보를 입력해주세요'}",
 }
 
 **카피라이팅 원칙:**
@@ -444,15 +443,6 @@ function bindDataToTemplate(template, data, requestData) {
         ingredientsHTML += `
           <h4 class="font-bold mb-3 text-lg">🍜 원재료 및 성분</h4>
           <div class="p-4 bg-gray-50 rounded">${requestData.ingredients}</div>`;
-      }
-      
-      // 알레르기 정보
-      if (data.allergyInfo || requestData.allergyInfo) {
-        ingredientsHTML += `
-          <div class="mt-6 p-4 bg-red-50 border-2 border-red-400 rounded-lg">
-            <h4 class="font-bold mb-2 text-lg text-red-700">⚠️ 알레르기 정보</h4>
-            <p class="text-red-600">${data.allergyInfo || requestData.allergyInfo}</p>
-          </div>`;
       }
     }
     
@@ -628,10 +618,9 @@ function generateFallbackData(requestData) {
     how2Title: "다양한 활용",
     how2Text: "여러 요리에 활용 가능한 만능 식재료입니다.",
     storageType: requestData.storageType || "냉동",
-    shippingTitle: "무료배송 혜택!",
-    shippingContent: requestData.shippingInfo ? requestData.shippingInfo.replace(/\n/g, '<br>') : '3만원 이상 구매시 전국 무료배송<br>만원요리 최씨남매와 함께라면<br>배송비 걱정 없이 장보기 완성!',
-    ingredientTable: '',
-    allergyInfo: ''
+    shippingTitle: requestData.shippingTitle || "배송 정보",
+    shippingContent: requestData.shippingInfo ? requestData.shippingInfo.replace(/\n/g, '<br>') : '배송 정보를 입력해주세요',
+    ingredientTable: ''
   };
 }
 
