@@ -193,9 +193,19 @@
             <div id="textInput" class="hidden">
                 <label class="block font-bold mb-2">전체 정보 붙여넣기</label>
                 <textarea id="bulkData" rows="15" class="w-full p-3 border border-gray-300 rounded-lg" 
-                          placeholder="함흥 물냉면 예시처럼 모든 정보를 복사해서 붙여넣어주세요"></textarea>
+                          placeholder="예시:
+함흥 물냉면 5인분
+구성: 2.7kg (함흥냉면 1kg / 냉면비빔장 5팩 340g)
+소비기한: 27.05.10
+제품종류: 가공
+유형: 냉동
+성분: 밀가루(밀/미국산,호주산) 96.29%, 전분가공품...
+제품특성: 함흥 지역의 전통 제조법으로 만든 정통 물냉면
+주의사항: 알레르기 유발물질 함유
+배송정보: 5만원 이상 무료배송"></textarea>
                 <div class="text-sm text-gray-600 mt-2">
-                    * AI가 자동으로 파싱하여 적절한 위치에 배치합니다
+                    * AI가 자동으로 인식하여 각 필드에 맞게 분류합니다
+                    * 어떤 형식이든 자유롭게 붙여넣으세요
                 </div>
             </div>
 
@@ -362,9 +372,9 @@
                     images: document.getElementById('detailedImages').value.split('\n').filter(url => url.trim())
                 };
             } else {
-                // 텍스트에서 파싱
+                // 텍스트에서 파싱 (AI 사용)
                 const bulkData = document.getElementById('bulkData').value;
-                productData = parseBulkData(bulkData);
+                productData = await parseBulkData(bulkData);
             }
             
             if (!productData.productName) {
@@ -413,21 +423,50 @@
             }
         }
         
-        function parseBulkData(bulkData) {
-            const lines = bulkData.split('\n');
-            const data = {};
-            
-            lines.forEach(line => {
-                if (line.includes('제품명')) data.productName = line.split(/\s{2,}/)[1]?.trim();
-                if (line.includes('구성 및 규격')) data.composition = line.split(/\s{2,}/)[1]?.trim();
-                if (line.includes('소비기한')) data.expiry = line.split(/\s{2,}/)[1]?.trim();
-                if (line.includes('제품종류')) data.productType = line.split(/\s{2,}/)[1]?.trim();
-                if (line.includes('유형')) data.storageType = line.split(/\s{2,}/)[1]?.trim();
-                if (line.includes('성분')) data.ingredients = line.split(/\s{2,}/)[1]?.trim();
-                if (line.includes('제품특성')) data.characteristics = line.split(/\s{2,}/)[1]?.trim();
-            });
-            
-            return data;
+        async function parseBulkData(bulkData) {
+            // AI를 사용해서 텍스트를 파싱
+            try {
+                const response = await fetch('/api/parse', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: bulkData })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    return result.data;
+                } else {
+                    // 폴백: 기본 파싱
+                    const lines = bulkData.split('\n');
+                    const data = {};
+                    
+                    lines.forEach(line => {
+                        // 다양한 형식 지원: "제품명: xxx", "제품명 : xxx", "제품명	xxx"
+                        const parts = line.split(/[:：\t]\s*/);
+                        if (parts.length >= 2) {
+                            const key = parts[0].trim();
+                            const value = parts.slice(1).join(':').trim();
+                            
+                            if (key.includes('제품명')) data.productName = value;
+                            if (key.includes('구성')) data.composition = value;
+                            if (key.includes('소비기한')) data.expiry = value;
+                            if (key.includes('제품종류')) data.productType = value;
+                            if (key.includes('유형')) data.storageType = value;
+                            if (key.includes('성분') || key.includes('원재료')) data.ingredients = value;
+                            if (key.includes('특성')) data.characteristics = value;
+                            if (key.includes('주의')) data.caution = value;
+                            if (key.includes('배송')) data.shippingInfo = value;
+                        }
+                    });
+                    
+                    return data;
+                }
+            } catch (error) {
+                console.error('AI 파싱 실패:', error);
+                alert('텍스트 파싱에 실패했습니다. 구조화된 폼을 사용해주세요.');
+                return {};
+            }
         }
         
         function formatSEO(seo) {

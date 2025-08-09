@@ -39,6 +39,70 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// AI 파싱 엔드포인트
+app.post('/api/parse', async (req, res) => {
+  try {
+    const { text } = req.body;
+    
+    if (!text) {
+      return res.json({ success: false, error: '텍스트가 없습니다' });
+    }
+    
+    const parsePrompt = `
+다음 제품 정보 텍스트를 분석해서 JSON 형식으로 구조화해주세요.
+텍스트에서 제품명, 구성, 소비기한, 제품종류, 유형, 성분, 특성, 주의사항, 배송정보 등을 추출하세요.
+
+텍스트:
+${text}
+
+다음 JSON 형식으로만 응답하세요:
+{
+  "productName": "제품명",
+  "composition": "구성 및 규격",
+  "expiry": "소비기한",
+  "productType": "제품종류",
+  "storageType": "유형 (냉동/냉장/실온)",
+  "ingredients": "성분/원재료",
+  "characteristics": "제품특성",
+  "caution": "주의사항",
+  "shippingInfo": "배송정보",
+  "haccp": false
+}
+
+없는 필드는 빈 문자열로 처리하세요. JSON만 반환하고 다른 설명은 하지 마세요.`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "당신은 제품 정보를 구조화하는 전문가입니다. JSON 형식으로만 응답하세요."
+        },
+        {
+          role: "user",
+          content: parsePrompt
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 1000
+    });
+    
+    const jsonText = completion.choices[0].message.content.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    
+    try {
+      const parsedData = JSON.parse(jsonText);
+      res.json({ success: true, data: parsedData });
+    } catch (e) {
+      console.error('JSON parse error:', e);
+      res.json({ success: false, error: 'JSON 파싱 실패' });
+    }
+    
+  } catch (error) {
+    console.error('Parse API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // Template loading
 let templateHTML = '';
 async function loadTemplate() {
