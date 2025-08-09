@@ -311,23 +311,46 @@ function bindDataToTemplate(template, data, requestData) {
   productInfoHTML += `<span class="font-bold">합배송:</span><span>7세트까지 가능</span>`;
   
   // 제품 사양을 스토리 섹션에 표시
-  if (productInfoHTML) {
-    const specsHTML = `
+  const specsCards = [];
+  
+  // 제품 사양 카드
+  const specItems = [];
+  if (requestData.composition) {
+    specItems.push(`<div><span class="font-semibold">구성:</span> ${requestData.composition}</div>`);
+  }
+  if (requestData.expiry) {
+    specItems.push(`<div><span class="font-semibold">소비기한:</span> ${requestData.expiry}</div>`);
+  }
+  if (requestData.productType) {
+    specItems.push(`<div><span class="font-semibold">제품종류:</span> ${requestData.productType}</div>`);
+  }
+  if (requestData.storageType) {
+    specItems.push(`<div><span class="font-semibold">보관방법:</span> ${requestData.storageType}</div>`);
+  }
+  
+  if (specItems.length > 0) {
+    specsCards.push(`
       <div class="card">
         <h4 class="font-bold mb-3">📦 제품 사양</h4>
         <div class="space-y-2 text-sm">
-          ${productInfoHTML.replace(/<span/g, '<div><span').replace(/<\/span><span/g, '</span> <span').replace(/<\/span>/g, '</span></div>')}
+          ${specItems.join('\n          ')}
         </div>
+      </div>`);
+  }
+  
+  // 배송 정보 카드
+  specsCards.push(`
+    <div class="card">
+      <h4 class="font-bold mb-3">🚚 배송 정보</h4>
+      <div class="space-y-2 text-sm">
+        <div><span class="font-semibold">포장방식:</span> 스킨포장</div>
+        <div><span class="font-semibold">합배송:</span> 7세트까지 가능</div>
+        ${requestData.shippingInfo ? `<div><span class="font-semibold">배송비:</span> ${requestData.shippingInfo.replace(/\n/g, '<br>')}</div>` : ''}
       </div>
-      <div class="card">
-        <h4 class="font-bold mb-3">🚚 배송 정보</h4>
-        <div class="space-y-2 text-sm">
-          <div><span class="font-semibold">포장방식:</span> 스킨포장</div>
-          <div><span class="font-semibold">합배송:</span> 7세트까지 가능</div>
-          ${requestData.shippingInfo ? `<div><span class="font-semibold">배송비:</span> ${requestData.shippingInfo.replace(/\n/g, '<br>')}</div>` : ''}
-        </div>
-      </div>`;
-    html = html.replace('<!-- 제품 사양이 여기에 표시됩니다 -->', specsHTML);
+    </div>`);
+  
+  if (specsCards.length > 0) {
+    html = html.replace('<!-- 제품 사양이 여기에 표시됩니다 -->', specsCards.join('\n'));
   }
   
   // 품목제조보고서 섹션 (이미지 또는 테이블)
